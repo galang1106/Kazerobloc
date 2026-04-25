@@ -123,7 +123,14 @@ function beliSekarang() {
         return;
     }
 
-    // Tampilkan harga di pop-up QRIS
+    // Ambil jumlah robux (dari pilihan grid atau input manual)
+    const robuxAmount = selectedRobux > 0 ? selectedRobux : document.getElementById('custom-robux').value;
+    const typeName = currentMode === 'pending' ? '5-7 Hari (Gamepass)' : 'Langsung Masuk (Instant)';
+
+    // Update data di dalam modal QRIS (Desain Baru)
+    document.getElementById('qris-username').innerText = username;
+    document.getElementById('qris-metode').innerText = typeName;
+    document.getElementById('qris-jumlah').innerText = `${robuxAmount} Robux`;
     document.getElementById('qris-total-price').innerText = formatRupiah(currentPrice);
     
     // Buka pop-up QRIS
