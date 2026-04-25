@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KazeRoblox - Top Up Robux</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="back-btn"><i class="fas fa-arrow-left"></i></div>
+            <div class="header-title">
+                <img src="assets/logo.png" alt="Logo KazeRoblox" class="header-logo">
+                <h1>KazeRoblox TopUp</h1>
+            </div>
+            <div class="cart-btn"><i class="fas fa-shopping-cart"></i></div>
+        </header>
+
+        <div class="rating-banner">
+            <div class="rating-item"><i class="fas fa-star"></i> 4.9 Rating (10.000+)</div>
+            <div class="rating-item"><i class="fas fa-medal"></i> Top Rank</div>
+            <div class="rating-item click-btn" onclick="openCaraBeli()"><i class="fas fa-info-circle"></i> Cara Beli</div>
+        </div>
+
+        <main class="content">
+            <section class="section">
+                <h2 class="section-title">Jenis Diinginkan</h2>
+                <div class="type-tabs">
+                    <div class="tab active" id="tab-pending" onclick="setMode('pending')">
+                        <span class="badge red">Sedang Flashsale!</span>
+                        <div class="tab-content">
+                            <div>
+                                <h3>Robux 5-7 Hari</h3>
+                                <p>Paling Hemat & Terlaris!</p>
+                            </div>
+                            <i class="fas fa-clock icon-green"></i>
+                        </div>
+                    </div>
+                    <div class="tab" id="tab-instant" onclick="setMode('instant')">
+                        <span class="badge blue">Garansi 100% Aman</span>
+                        <div class="tab-content">
+                            <div>
+                                <h3>Langsung Masuk</h3>
+                                <p>Syarat: Join Grup 14 Hari</p>
+                            </div>
+                            <i class="fas fa-bolt icon-blue"></i>
+                        </div>
+                    </div>
+                </div>
+                <div id="warning-instant" class="warning-box" style="display: none;">
+                    ⚠️ <b>Perhatian:</b> Untuk layanan Langsung Masuk, akun Roblox kamu WAJIB sudah bergabung di komunitas Laxerouse minimal 14 hari.
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Detail User</h2>
+                <p class="section-subtitle">Masukkan Username Roblox yang ingin diisi. Transaksi 100% aman.</p>
+                <div class="input-group">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" placeholder="Masukkan Username Roblox" id="username">
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Jumlah Robux</h2>
+                <div class="custom-input-box">
+                    <div class="input-row">
+                        <input type="number" id="custom-robux" placeholder="Masukkan Jumlah" oninput="calculateCustomPrice()">
+                        <span>Rbx</span>
+                    </div>
+                    <div class="price-row">
+                        <span id="custom-price">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="divider">
+                    <span>Atau pilih dari penawaran terbaik</span>
+                </div>
+
+                <div class="product-grid" id="product-grid">
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Pembayaran</h2>
+                <div class="payment-methods">
+                    <div class="payment-card active">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="qris-logo">
+                        <p>Pembayaran via QRIS Saja</p>
+                        <i class="fas fa-check-circle check-icon"></i>
+                    </div>
+                </div>
+            </section>
+
+            <div class="bottom-bar">
+                <div class="total-info">
+                    <span>Total Pembayaran</span>
+                    <h3 id="bottom-total-price">Rp 0</h3>
+                </div>
+                <button class="buy-btn" onclick="beliSekarang()">Beli Sekarang</button>
+            </div>
+        </main>
+
+        <div id="modal-cara-beli" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeCaraBeli()">&times;</span>
+                <h2>🌱 Cara Beli Robux</h2>
+                <ol>
+                    <li>Masukkan <b>Username Roblox</b> kamu dengan benar di kolom yang disediakan.</li>
+                    <li>Pilih tipe Robux (<b>5-7 Hari</b> atau <b>Langsung Masuk</b>).</li>
+                    <li>Ketik jumlah Robux atau pilih langsung dari kotak pilihan di bawahnya.</li>
+                    <li>Pastikan metode pembayaran <b>QRIS</b> sudah terpilih.</li>
+                    <li>Klik <b>Beli Sekarang</b> dan lakukan pembayaran sesuai instruksi admin.</li>
+                    <li>Robux akan segera diproses ke akun kamu!</li>
+                </ol>
+            </div>
+        </div>
+
+        <div id="modal-qris" class="modal">
+            <div class="modal-content" style="text-align: center;">
+                <span class="close-btn" onclick="closeQris()">&times;</span>
+                <h2 style="margin-bottom: 10px; color: #2E7D32;">Scan QRIS</h2>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Silakan scan kode QRIS di bawah ini menggunakan M-Banking atau e-Wallet.</p>
+                
+                <img src="assets/qris.png" alt="QRIS KazeRoblox" style="width: 100%; max-width: 250px; border-radius: 10px; border: 2px solid #4CAF50; margin-bottom: 15px;">
+                
+                <p style="font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">Total yang harus dibayar:</p>
+                <h3 id="qris-total-price" style="color: #e65100; margin-bottom: 20px; font-size: 1.5rem;">Rp 0</h3>
+                
+                <button class="buy-btn" style="width: 100%; background: #25D366; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);" onclick="konfirmasiWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> Sudah Bayar? Konfirmasi WA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
