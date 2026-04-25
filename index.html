@@ -16,13 +16,19 @@
                 <img src="assets/logo.png" alt="Logo KazeRoblox" class="header-logo">
                 <h1>KazeRoblox TopUp</h1>
             </div>
-            <div class="cart-btn"><i class="fas fa-shopping-cart"></i></div>
+            <div style="width: 24px;"></div>
         </header>
 
         <div class="rating-banner">
-            <div class="rating-item"><i class="fas fa-star"></i> 4.9 Rating (10.000+)</div>
-            <div class="rating-item"><i class="fas fa-medal"></i> Top Rank</div>
-            <div class="rating-item click-btn" onclick="openCaraBeli()"><i class="fas fa-info-circle"></i> Cara Beli</div>
+            <div class="rating-item">
+                <i class="fas fa-bolt" style="color: #fbbf24;"></i> Proses Cepat
+            </div>
+            <div class="rating-item">
+                <i class="fas fa-shield-alt" style="color: #3b82f6;"></i> Terpercaya
+            </div>
+            <div class="rating-item click-btn" onclick="openCaraBeli()">
+                <i class="fas fa-info-circle"></i> Cara Beli
+            </div>
         </div>
 
         <main class="content">
@@ -120,19 +126,51 @@
         </div>
 
         <div id="modal-qris" class="modal">
-            <div class="modal-content" style="text-align: center;">
-                <span class="close-btn" onclick="closeQris()">&times;</span>
-                <h2 style="margin-bottom: 10px; color: #2E7D32;">Scan QRIS</h2>
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Silakan scan kode QRIS di bawah ini menggunakan M-Banking atau e-Wallet.</p>
+            <div class="modal-content" style="background-color: #0d1117; color: #ffffff; border-radius: 20px; padding: 24px; max-width: 400px; text-align: left; border: 1px solid #161b22; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+                <span class="close-btn" onclick="closeQris()" style="float: right; color: #8b949e; cursor: pointer; font-size: 24px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#8b949e'">&times;</span>
                 
-                <img src="assets/qris.png" alt="QRIS KazeRoblox" style="width: 100%; max-width: 250px; border-radius: 10px; border: 2px solid #4CAF50; margin-bottom: 15px;">
-                
-                <p style="font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">Total yang harus dibayar:</p>
-                <h3 id="qris-total-price" style="color: #e65100; margin-bottom: 20px; font-size: 1.5rem;">Rp 0</h3>
-                
-                <button class="buy-btn" style="width: 100%; background: #25D366; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);" onclick="konfirmasiWhatsApp()">
-                    <i class="fab fa-whatsapp"></i> Sudah Bayar? Konfirmasi WA
-                </button>
+                <div style="background-color: #161b22; border-radius: 12px; padding: 20px; margin-bottom: 24px; margin-top: 10px; border: 1px solid #30363d;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #ffffff;">Ringkasan Pesanan</h3>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+                        <span style="color: #8b949e;">Username:</span>
+                        <span id="qris-username" style="font-weight: 600; color: #ffffff;">Username</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
+                        <span style="color: #8b949e;">Metode:</span>
+                        <span id="qris-metode" style="font-weight: 600; color: #ffffff;">Layanan</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 14px;">
+                        <span style="color: #8b949e;">Jumlah Robux:</span>
+                        <span id="qris-jumlah" style="font-weight: 600; color: #ffffff;">0 Robux</span>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #30363d; margin: 16px 0;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; font-size: 16px; color: #ffffff;">Total:</span>
+                        <span id="qris-total-price" style="color: #2ea043; font-weight: bold; font-size: 22px;">Rp 0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Instruksi Pembayaran</h3>
+                    <p style="margin: 0 0 16px 0; font-size: 14px; font-weight: 500; color: #e6edf3;">1. Scan QRIS & Transfer sesuai nominal</p>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="background-color: #ffffff; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 0 20px rgba(46, 160, 67, 0.35); border: 2px solid #2ea043;">
+                            <img src="assets/qris.png" alt="QRIS Code" style="width: 100%; max-width: 220px; display: block; border-radius: 8px;">
+                        </div>
+                    </div>
+
+                    <p style="color: #8b949e; font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+                        Buka e-wallet Anda, pilih menu <i>scan</i>, lalu transfer sesuai nominal di Ringkasan Pesanan.
+                    </p>
+
+                    <button onclick="konfirmasiWhatsApp()" style="width: 100%; background-color: #161b22; color: #ffffff; border: 1px solid #30363d; padding: 14px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#21262d'" onmouseout="this.style.backgroundColor='#161b22'">
+                        Sudah Membayar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
