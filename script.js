@@ -7,6 +7,8 @@ const RATES = {
 let currentMode = 'pending';
 let selectedRobux = 0;
 let currentPrice = 0;
+
+/* --- CEK USERNAME ROBLOX --- */
 let usernameCheckTimeout = null;
 let isUsernameValid = false;
 let verifiedUserId = null;
@@ -24,36 +26,46 @@ async function checkRobloxUsername(username) {
     statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengecek username...</span>`;
 
     try {
-        const response = await fetch(
-            `https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username.trim())}`
-        );
+        const response = await fetch('https://kazeroblox.site/api/check-username', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username.trim() })
+        });
 
         const data = await response.json();
 
-        if (data.Id) {
-            verifiedUserId = data.Id;
+        if (data.exists === true) {
+            verifiedUserId = data.userId;
             isUsernameValid = true;
 
-            const avatarHtml = `<img src="https://www.roblox.com/headshot-thumbnail/image?userId=${data.Id}&width=48&height=48&format=png" alt="avatar" class="roblox-avatar" onerror="this.style.display='none'">`;
+            const avatarHtml = data.avatarUrl
+                ? `<img src="${data.avatarUrl}" alt="avatar" class="roblox-avatar" onerror="this.style.display='none'">`
+                : '';
 
             statusEl.innerHTML = `
                 <div class="status-valid">
                     ${avatarHtml}
                     <div class="status-info">
-                        <span class="status-name"><i class="fas fa-check-circle"></i> ${data.Username}</span>
-                        <span class="status-id">ID: ${data.Id}</span>
+                        <span class="status-name"><i class="fas fa-check-circle"></i> ${data.username}</span>
+                        <span class="status-id">ID: ${data.userId}</span>
                     </div>
                 </div>`;
+
+        } else if (data.exists === false) {
+            isUsernameValid = false;
+            verifiedUserId = null;
+            statusEl.innerHTML = `<span class="status-invalid"><i class="fas fa-times-circle"></i> ${data.error || 'Username tidak ditemukan di Roblox'}</span>`;
+
         } else {
             isUsernameValid = false;
             verifiedUserId = null;
-            statusEl.innerHTML = `<span class="status-invalid"><i class="fas fa-times-circle"></i> Username tidak ditemukan di Roblox</span>`;
+            statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> ${data.error || 'Gagal mengecek, coba lagi'}</span>`;
         }
 
     } catch (err) {
         isUsernameValid = false;
         verifiedUserId = null;
-        statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> Gagal mengecek, coba lagi</span>`;
+        statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> Gagal terhubung ke server</span>`;
     }
 }
 
@@ -72,7 +84,6 @@ function onUsernameInput() {
 
     statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengetik...</span>`;
 
-    // Debounce 800ms
     usernameCheckTimeout = setTimeout(() => {
         checkRobloxUsername(val);
     }, 800);
@@ -237,7 +248,6 @@ function konfirmasiWhatsApp() {
     closeQris();
 }
 
-// Menutup modal jika user klik area gelap
 window.onclick = function(event) {
     let modalCaraBeli = document.getElementById('modal-cara-beli');
     let modalQris = document.getElementById('modal-qris');
