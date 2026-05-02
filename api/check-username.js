@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
-    // Allow CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -62,7 +61,6 @@ export default async function handler(req, res) {
         }
 
     } catch (error) {
-        // Fallback ke API baru Roblox
         try {
             const fallbackResponse = await fetch("https://users.roblox.com/v1/usernames/users", {
                 method: "POST",
