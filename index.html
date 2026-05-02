@@ -164,11 +164,45 @@
                         </div>
                     </div>
 
-                    <p style="color: #8b949e; font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+                    <p style="color: #8b949e; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
                         Buka e-wallet Anda, pilih menu <i>scan</i>, lalu transfer sesuai nominal di Ringkasan Pesanan.
                     </p>
 
-                    <button onclick="konfirmasiWhatsApp()" style="width: 100%; background-color: #161b22; color: #ffffff; border: 1px solid #30363d; padding: 14px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#21262d'" onmouseout="this.style.backgroundColor='#161b22'">
+                    <!-- Upload Bukti Transfer -->
+                    <div style="margin-bottom: 20px;">
+                        <p style="color: #e6edf3; font-size: 14px; font-weight: 600; margin-bottom: 10px;">
+                            <i class="fas fa-upload" style="color: #2ea043; margin-right: 6px;"></i>Upload Bukti Transfer <span style="color: #f85149;">*</span>
+                        </p>
+
+                        <!-- Area Upload -->
+                        <div id="bukti-upload-area" onclick="document.getElementById('bukti-input').click()"
+                            style="border: 2px dashed #30363d; border-radius: 10px; padding: 24px 16px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px;"
+                            onmouseover="this.style.borderColor='#2ea043'; this.style.backgroundColor='rgba(46,160,67,0.05)'"
+                            onmouseout="this.style.borderColor='#30363d'; this.style.backgroundColor='transparent'">
+                            <i class="fas fa-image" style="font-size: 28px; color: #8b949e;"></i>
+                            <span style="color: #8b949e; font-size: 13px;">Klik untuk pilih gambar bukti transfer</span>
+                            <span style="color: #484f58; font-size: 11px;">JPG, PNG — Maks. 5MB</span>
+                        </div>
+                        <input type="file" id="bukti-input" accept="image/*" style="display: none;">
+
+                        <!-- Preview Gambar -->
+                        <div id="bukti-preview" style="display: none; margin-top: 10px; position: relative;">
+                            <img id="bukti-preview-img" src="" alt="Bukti Transfer"
+                                style="width: 100%; border-radius: 10px; border: 1px solid #30363d; max-height: 180px; object-fit: cover;">
+                            <button onclick="hapusBukti()" title="Hapus gambar"
+                                style="position: absolute; top: 8px; right: 8px; background: rgba(248,81,73,0.9); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <p style="color: #3fb950; font-size: 12px; margin-top: 6px; text-align: center;">
+                                <i class="fas fa-check-circle"></i> Bukti berhasil dipilih
+                            </p>
+                        </div>
+                    </div>
+
+                    <button id="sudah-bayar-btn" onclick="konfirmasiWhatsApp()"
+                        style="width: 100%; background-color: #2ea043; color: #ffffff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px; transition: background-color 0.2s;"
+                        onmouseover="if(!this.disabled) this.style.backgroundColor='#3fb950'"
+                        onmouseout="if(!this.disabled) this.style.backgroundColor='#2ea043'">
                         Sudah Membayar
                     </button>
                 </div>
