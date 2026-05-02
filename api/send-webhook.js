@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
                 { name: '⚡ Metode',       value: metode || '-',                 inline: true },
                 { name: '💎 Jumlah Robux', value: `${jumlahRobux} Rbx`,         inline: true },
                 { name: '💰 Total Harga',  value: String(totalHarga),            inline: true },
-                { name: '✅ Status',       value: status || 'SELESAI',           inline: true },
+                { name: '✅ Status Pembayaran',       value: status || 'SELESAI',           inline: true },
             ],
             timestamp: new Date().toISOString(),
             footer: { text: 'KazeRoblox TopUp System' }
