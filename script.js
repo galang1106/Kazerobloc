@@ -27,7 +27,7 @@ async function checkRobloxUsername(username) {
 
     try {
         // POST ke backend handler (Vercel API route)
-        const response = await fetch('/api/check-username', {
+        const response = await fetch('check-username', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username.trim() })
