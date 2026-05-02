@@ -8,6 +8,92 @@ let currentMode = 'pending';
 let selectedRobux = 0;
 let currentPrice = 0;
 
+/* --- CEK USERNAME ROBLOX --- */
+let usernameCheckTimeout = null;
+let isUsernameValid = false;
+let verifiedUserId = null;
+
+async function checkRobloxUsername(username) {
+    const statusEl = document.getElementById('username-status');
+
+    if (!username || username.trim() === '') {
+        statusEl.innerHTML = '';
+        isUsernameValid = false;
+        verifiedUserId = null;
+        return;
+    }
+
+    // Tampilkan loading
+    statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengecek username...</span>`;
+
+    try {
+        // Roblox API butuh POST, tapi kena CORS dari browser.
+        // Pakai allorigins sebagai CORS proxy.
+        const targetUrl = encodeURIComponent('https://users.roblox.com/v1/usernames/users');
+        const body = JSON.stringify({ usernames: [username.trim()], excludeBannedUsers: false });
+        
+        const response = await fetch(`https://api.allorigins.win/raw?url=${targetUrl}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: body
+        });
+
+        if (!response.ok) throw new Error('Network error');
+
+        const data = await response.json();
+
+        if (data.data && data.data.length > 0) {
+            const user = data.data[0];
+            verifiedUserId = user.id;
+            isUsernameValid = true;
+
+            // Ambil avatar thumbnail
+            const avatarUrl = `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${user.id}&size=48x48&format=Png&isCircular=true`;
+            const avatarProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(avatarUrl)}`;
+
+            let avatarHtml = `<img src="${avatarProxy}" alt="avatar" class="roblox-avatar" onerror="this.style.display='none'">`;
+
+            statusEl.innerHTML = `
+                <div class="status-valid">
+                    ${avatarHtml}
+                    <div class="status-info">
+                        <span class="status-name"><i class="fas fa-check-circle"></i> ${user.name}</span>
+                        <span class="status-id">ID: ${user.id}</span>
+                    </div>
+                </div>`;
+        } else {
+            isUsernameValid = false;
+            verifiedUserId = null;
+            statusEl.innerHTML = `<span class="status-invalid"><i class="fas fa-times-circle"></i> Username tidak ditemukan di Roblox</span>`;
+        }
+    } catch (err) {
+        isUsernameValid = false;
+        verifiedUserId = null;
+        statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> Gagal mengecek, coba lagi</span>`;
+    }
+}
+
+function onUsernameInput() {
+    clearTimeout(usernameCheckTimeout);
+    isUsernameValid = false;
+    verifiedUserId = null;
+
+    const val = document.getElementById('username').value;
+    const statusEl = document.getElementById('username-status');
+
+    if (!val || val.trim() === '') {
+        statusEl.innerHTML = '';
+        return;
+    }
+
+    statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengetik...</span>`;
+
+    // Debounce 800ms
+    usernameCheckTimeout = setTimeout(() => {
+        checkRobloxUsername(val);
+    }, 800);
+}
+
 const packages = [
     100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 
     2000, 3000, 4000, 5000
@@ -115,6 +201,11 @@ function beliSekarang() {
     
     if (!username) {
         alert("Silakan masukkan Username Roblox kamu terlebih dahulu!");
+        return;
+    }
+
+    if (!isUsernameValid) {
+        alert("Username Roblox tidak valid atau belum terverifikasi. Pastikan username benar dan tunggu proses pengecekan selesai.");
         return;
     }
 
