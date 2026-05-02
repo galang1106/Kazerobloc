@@ -26,7 +26,6 @@ async function checkRobloxUsername(username) {
     statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengecek username...</span>`;
 
     try {
-        // POST ke backend handler (Vercel API route)
         const response = await fetch('check-username', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
