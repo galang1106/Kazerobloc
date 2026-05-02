@@ -128,85 +128,77 @@
         </div>
 
         <div id="modal-qris" class="modal">
-            <div class="modal-content" style="background-color: #0d1117; color: #ffffff; border-radius: 20px; padding: 24px; max-width: 400px; text-align: left; border: 1px solid #161b22; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
-                <span class="close-btn" onclick="closeQris()" style="float: right; color: #8b949e; cursor: pointer; font-size: 24px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#8b949e'">&times;</span>
-                
-                <div style="background-color: #161b22; border-radius: 12px; padding: 20px; margin-bottom: 24px; margin-top: 10px; border: 1px solid #30363d;">
-                    <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #ffffff;">Ringkasan Pesanan</h3>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
-                        <span style="color: #8b949e;">Username:</span>
-                        <span id="qris-username" style="font-weight: 600; color: #ffffff;">Username</span>
+            <div class="modal-content" style="background-color: #0d1117; color: #ffffff; border-radius: 16px; padding: 16px; max-width: 380px; width: 92%; text-align: left; border: 1px solid #161b22; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); max-height: 92vh; overflow-y: auto; margin: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: #fff;">🧾 Ringkasan & Pembayaran</h3>
+                    <span onclick="closeQris()" style="color: #8b949e; cursor: pointer; font-size: 22px; line-height: 1;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#8b949e'">&times;</span>
+                </div>
+
+                <!-- Ringkasan Pesanan (compact) -->
+                <div style="background-color: #161b22; border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid #30363d; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span style="color: #8b949e;">Username</span>
+                        <span id="qris-username" style="font-weight: 600; color: #fff;">-</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;">
-                        <span style="color: #8b949e;">Metode:</span>
-                        <span id="qris-metode" style="font-weight: 600; color: #ffffff;">Layanan</span>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span style="color: #8b949e;">Metode</span>
+                        <span id="qris-metode" style="font-weight: 600; color: #fff;">-</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 14px;">
-                        <span style="color: #8b949e;">Jumlah Robux:</span>
-                        <span id="qris-jumlah" style="font-weight: 600; color: #ffffff;">0 Robux</span>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #8b949e;">Jumlah Robux</span>
+                        <span id="qris-jumlah" style="font-weight: 600; color: #fff;">0 Robux</span>
                     </div>
-                    
-                    <div style="border-top: 1px solid #30363d; margin: 16px 0;"></div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: bold; font-size: 16px; color: #ffffff;">Total:</span>
-                        <span id="qris-total-price" style="color: #2ea043; font-weight: bold; font-size: 22px;">Rp 0</span>
+                    <div style="border-top: 1px solid #30363d; padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 700; font-size: 14px;">Total</span>
+                        <span id="qris-total-price" style="color: #2ea043; font-weight: 700; font-size: 18px;">Rp 0</span>
                     </div>
                 </div>
 
-                <div>
-                    <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Instruksi Pembayaran</h3>
-                    <p style="margin: 0 0 16px 0; font-size: 14px; font-weight: 500; color: #e6edf3;">1. Scan QRIS & Transfer sesuai nominal</p>
-                    
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <div style="background-color: #ffffff; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 0 20px rgba(46, 160, 67, 0.35); border: 2px solid #2ea043;">
-                            <img src="assets/qris.png" alt="QRIS Code" style="width: 100%; max-width: 220px; display: block; border-radius: 8px;">
+                <!-- QR + Upload berdampingan di desktop, stack di mobile -->
+                <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap;">
+                    <!-- QR Code -->
+                    <div style="flex: 0 0 auto; text-align: center;">
+                        <p style="color: #8b949e; font-size: 11px; margin-bottom: 6px;">Scan untuk bayar</p>
+                        <div style="background:#fff; padding: 7px; border-radius: 8px; border: 2px solid #2ea043; display: inline-block;">
+                            <img src="assets/qris.png" alt="QRIS" style="width: 110px; height: 110px; display: block; border-radius: 4px; object-fit: cover;">
                         </div>
                     </div>
 
-                    <p style="color: #8b949e; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
-                        Buka e-wallet Anda, pilih menu <i>scan</i>, lalu transfer sesuai nominal di Ringkasan Pesanan.
-                    </p>
-
-                    <!-- Upload Bukti Transfer -->
-                    <div style="margin-bottom: 20px;">
-                        <p style="color: #e6edf3; font-size: 14px; font-weight: 600; margin-bottom: 10px;">
-                            <i class="fas fa-upload" style="color: #2ea043; margin-right: 6px;"></i>Upload Bukti Transfer <span style="color: #f85149;">*</span>
+                    <!-- Upload Bukti -->
+                    <div style="flex: 1; min-width: 130px;">
+                        <p style="color: #e6edf3; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
+                            <i class="fas fa-upload" style="color: #2ea043; margin-right: 4px;"></i>Bukti Transfer <span style="color: #f85149;">*</span>
                         </p>
-
-                        <!-- Area Upload -->
                         <div id="bukti-upload-area" onclick="document.getElementById('bukti-input').click()"
-                            style="border: 2px dashed #30363d; border-radius: 10px; padding: 24px 16px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px;"
+                            style="border: 2px dashed #30363d; border-radius: 8px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px;"
                             onmouseover="this.style.borderColor='#2ea043'; this.style.backgroundColor='rgba(46,160,67,0.05)'"
                             onmouseout="this.style.borderColor='#30363d'; this.style.backgroundColor='transparent'">
-                            <i class="fas fa-image" style="font-size: 28px; color: #8b949e;"></i>
-                            <span style="color: #8b949e; font-size: 13px;">Klik untuk pilih gambar bukti transfer</span>
-                            <span style="color: #484f58; font-size: 11px;">JPG, PNG — Maks. 5MB</span>
+                            <i class="fas fa-image" style="font-size: 20px; color: #8b949e;"></i>
+                            <span style="color: #8b949e; font-size: 11px;">Klik pilih gambar</span>
+                            <span style="color: #484f58; font-size: 10px;">JPG/PNG, maks 5MB</span>
                         </div>
                         <input type="file" id="bukti-input" accept="image/*" style="display: none;">
 
-                        <!-- Preview Gambar -->
-                        <div id="bukti-preview" style="display: none; margin-top: 10px; position: relative;">
-                            <img id="bukti-preview-img" src="" alt="Bukti Transfer"
-                                style="width: 100%; border-radius: 10px; border: 1px solid #30363d; max-height: 180px; object-fit: cover;">
-                            <button onclick="hapusBukti()" title="Hapus gambar"
-                                style="position: absolute; top: 8px; right: 8px; background: rgba(248,81,73,0.9); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center;">
+                        <div id="bukti-preview" style="display: none; margin-top: 6px; position: relative;">
+                            <img id="bukti-preview-img" src="" alt="Bukti"
+                                style="width: 100%; border-radius: 8px; border: 1px solid #30363d; max-height: 110px; object-fit: cover;">
+                            <button onclick="hapusBukti()" title="Hapus"
+                                style="position: absolute; top: 4px; right: 4px; background: rgba(248,81,73,0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 11px;">
                                 <i class="fas fa-times"></i>
                             </button>
-                            <p style="color: #3fb950; font-size: 12px; margin-top: 6px; text-align: center;">
-                                <i class="fas fa-check-circle"></i> Bukti berhasil dipilih
+                            <p style="color: #3fb950; font-size: 11px; margin-top: 4px; text-align: center;">
+                                <i class="fas fa-check-circle"></i> Bukti dipilih
                             </p>
                         </div>
                     </div>
-
-                    <button id="sudah-bayar-btn" onclick="konfirmasiWhatsApp()"
-                        style="width: 100%; background-color: #2ea043; color: #ffffff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px; transition: background-color 0.2s;"
-                        onmouseover="if(!this.disabled) this.style.backgroundColor='#3fb950'"
-                        onmouseout="if(!this.disabled) this.style.backgroundColor='#2ea043'">
-                        Sudah Membayar
-                    </button>
                 </div>
+
+                <button id="sudah-bayar-btn" onclick="konfirmasiWhatsApp()"
+                    style="width: 100%; background-color: #2ea043; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background-color 0.2s;"
+                    onmouseover="if(!this.disabled) this.style.backgroundColor='#3fb950'"
+                    onmouseout="if(!this.disabled) this.style.backgroundColor='#2ea043'">
+                    Sudah Membayar
+                </button>
             </div>
         </div>
     </div>
