@@ -158,3 +158,80 @@ body {
 .modal-content ol { padding-left: 20px; color: #444; line-height: 1.7; font-size: 0.9rem; }
 .modal-content li { margin-bottom: 10px; }
 .modal-content b { color: var(--leaf-dark); }
+
+/* --- Username Check Status --- */
+#username-status {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    min-height: 24px;
+}
+
+.status-loading {
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-valid {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #e8f5e9;
+    border: 1px solid #4CAF50;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.roblox-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--leaf-primary);
+    object-fit: cover;
+}
+
+.status-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.status-name {
+    font-weight: 700;
+    color: var(--leaf-dark);
+    font-size: 0.88rem;
+}
+
+.status-name i {
+    color: var(--leaf-primary);
+    margin-right: 4px;
+}
+
+.status-id {
+    color: #666;
+    font-size: 0.75rem;
+}
+
+.status-invalid {
+    color: #c62828;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffebee;
+    border: 1px solid #ef9a9a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 600;
+}
+
+.status-error {
+    color: #e65100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff3e0;
+    border: 1px solid #ffcc80;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
