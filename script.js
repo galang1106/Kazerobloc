@@ -7,8 +7,6 @@ const RATES = {
 let currentMode = 'pending';
 let selectedRobux = 0;
 let currentPrice = 0;
-
-/* --- CEK USERNAME ROBLOX --- */
 let usernameCheckTimeout = null;
 let isUsernameValid = false;
 let verifiedUserId = null;
@@ -26,47 +24,36 @@ async function checkRobloxUsername(username) {
     statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengecek username...</span>`;
 
     try {
-        const response = await fetch('check-username', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: username.trim() })
-        });
+        const response = await fetch(
+            `https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username.trim())}`
+        );
 
         const data = await response.json();
 
-        if (data.exists === true) {
-            verifiedUserId = data.userId;
+        if (data.Id) {
+            verifiedUserId = data.Id;
             isUsernameValid = true;
 
-            const avatarHtml = data.avatarUrl
-                ? `<img src="${data.avatarUrl}" alt="avatar" class="roblox-avatar" onerror="this.style.display='none'">`
-                : '';
+            const avatarHtml = `<img src="https://www.roblox.com/headshot-thumbnail/image?userId=${data.Id}&width=48&height=48&format=png" alt="avatar" class="roblox-avatar" onerror="this.style.display='none'">`;
 
             statusEl.innerHTML = `
                 <div class="status-valid">
                     ${avatarHtml}
                     <div class="status-info">
-                        <span class="status-name"><i class="fas fa-check-circle"></i> ${data.username}</span>
-                        <span class="status-id">ID: ${data.userId}</span>
+                        <span class="status-name"><i class="fas fa-check-circle"></i> ${data.Username}</span>
+                        <span class="status-id">ID: ${data.Id}</span>
                     </div>
                 </div>`;
-
-        } else if (data.exists === false) {
-            isUsernameValid = false;
-            verifiedUserId = null;
-            statusEl.innerHTML = `<span class="status-invalid"><i class="fas fa-times-circle"></i> ${data.error || 'Username tidak ditemukan di Roblox'}</span>`;
-
         } else {
-            // exists === null → server error
             isUsernameValid = false;
             verifiedUserId = null;
-            statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> ${data.error || 'Gagal mengecek, coba lagi'}</span>`;
+            statusEl.innerHTML = `<span class="status-invalid"><i class="fas fa-times-circle"></i> Username tidak ditemukan di Roblox</span>`;
         }
 
     } catch (err) {
         isUsernameValid = false;
         verifiedUserId = null;
-        statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> Gagal terhubung ke server</span>`;
+        statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> Gagal mengecek, coba lagi</span>`;
     }
 }
 
@@ -211,17 +198,14 @@ function beliSekarang() {
         return;
     }
 
-    // Ambil jumlah robux (dari pilihan grid atau input manual)
     const robuxAmount = selectedRobux > 0 ? selectedRobux : document.getElementById('custom-robux').value;
     const typeName = currentMode === 'pending' ? '5-7 Hari (Gamepass)' : 'Langsung Masuk (Instant)';
 
-    // Update data di dalam modal QRIS (Desain Baru)
     document.getElementById('qris-username').innerText = username;
     document.getElementById('qris-metode').innerText = typeName;
     document.getElementById('qris-jumlah').innerText = `${robuxAmount} Robux`;
     document.getElementById('qris-total-price').innerText = formatRupiah(currentPrice);
     
-    // Buka pop-up QRIS
     document.getElementById('modal-qris').style.display = 'flex';
 }
 
@@ -236,10 +220,8 @@ function konfirmasiWhatsApp() {
     const robuxAmount = selectedRobux > 0 ? selectedRobux : document.getElementById('custom-robux').value;
     const totalBayar = formatRupiah(currentPrice);
 
-    // Nomor WA yang kamu minta
     const nomorWA = "6282241515939";
 
-    // Format teks untuk WA
     const pesan = `Halo Admin KazeRoblox, saya sudah membayar TopUp Robux.%0A%0A` +
                   `*Detail Pesanan:*%0A` +
                   `- Username: ${username}%0A` +
@@ -249,11 +231,9 @@ function konfirmasiWhatsApp() {
                   `- Metode: QRIS%0A%0A` +
                   `Berikut saya lampirkan bukti transfernya.`;
 
-    // Buat link WA dan buka di tab baru
     const urlWA = `https://wa.me/${nomorWA}?text=${pesan}`;
     window.open(urlWA, '_blank');
 
-    // Tutup pop-up
     closeQris();
 }
 
