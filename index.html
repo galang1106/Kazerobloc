@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KazeRoblox - Top Up Robux</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,9 +14,20 @@
             <div class="back-btn"><i class="fas fa-arrow-left"></i></div>
             <div class="header-title">
                 <img src="assets/logo.png" alt="Logo KazeRoblox" class="header-logo">
-                <h1>KazeRoblox TopUp</h1>
+                <h1>KazeRoblox</h1>
             </div>
-            <div style="width: 24px;"></div>
+            <div class="header-actions">
+                <a href="https://whatsapp.com/channel/0029VbAgqk247Xe74fOZS73W" target="_blank" rel="noopener noreferrer" class="saluran-header-btn" title="Join Saluran KazeRoblox">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <div class="action-btn" onclick="openRiwayat()" title="Riwayat Pembelian">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="action-btn cart-btn-container" onclick="openKeranjang()" title="Keranjang">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-badge" class="cart-badge">0</span>
+                </div>
+            </div>
         </header>
 
         <div class="rating-banner">
@@ -29,6 +40,10 @@
             <div class="rating-item click-btn" onclick="openCaraBeli()">
                 <i class="fas fa-info-circle"></i> Cara Beli
             </div>
+        </div>
+
+        <div class="promo-banner-container">
+            <img src="assets/banner-promo.png" alt="Promo Spesial KazeRoblox" class="promo-banner" onerror="this.src='https://placehold.co/600x200/4CAF50/ffffff?text=Promo+Spesial+Laxerouse'">
         </div>
 
         <main class="content">
@@ -87,8 +102,7 @@
                     <span>Atau pilih dari penawaran terbaik</span>
                 </div>
 
-                <div class="product-grid" id="product-grid">
-                </div>
+                <div class="product-grid" id="product-grid"></div>
             </section>
 
             <section class="section">
@@ -101,15 +115,19 @@
                     </div>
                 </div>
             </section>
-
         </main>
 
         <div class="bottom-bar">
             <div class="total-info">
-                <span>Total Pembayaran</span>
+                <span>Total Item Terpilih</span>
                 <h3 id="bottom-total-price">Rp 0</h3>
             </div>
-            <button class="buy-btn" onclick="beliSekarang()">Beli Sekarang</button>
+            <div class="bottom-buttons">
+                <button class="cart-add-btn" onclick="tambahKeKeranjang()" title="Tambah Ke Keranjang">
+                    <i class="fas fa-cart-plus"></i>
+                </button>
+                <button class="buy-btn" onclick="beliSekarangDirect()">Beli Langsung</button>
+            </div>
         </div>
 
         <div id="modal-cara-beli" class="modal">
@@ -120,87 +138,91 @@
                     <li>Masukkan <b>Username Roblox</b> kamu dengan benar di kolom yang disediakan.</li>
                     <li>Pilih tipe Robux (<b>5-7 Hari</b> atau <b>Langsung Masuk</b>).</li>
                     <li>Ketik jumlah Robux atau pilih langsung dari kotak pilihan di bawahnya.</li>
-                    <li>Pastikan metode pembayaran <b>QRIS</b> sudah terpilih.</li>
-                    <li>Klik <b>Beli Sekarang</b> dan lakukan pembayaran sesuai instruksi admin.</li>
-                    <li>Robux akan segera diproses ke akun kamu!</li>
+                    <li>Klik tombol <i class="fas fa-cart-plus"></i> untuk menampung di keranjang atau klik <b>Beli Langsung</b>.</li>
+                    <li>Scan QRIS, upload bukti transfer sah, lalu tekan konfirmasi untuk mengirim data ke Admin!</li>
                 </ol>
             </div>
         </div>
 
+        <div id="modal-keranjang" class="modal">
+            <div class="modal-content-dark">
+                <div class="modal-header-dark">
+                    <h3><i class="fas fa-shopping-cart" style="color: #4CAF50;"></i> Keranjang Kamu</h3>
+                    <span class="close-btn-dark" onclick="closeKeranjang()">&times;</span>
+                </div>
+                <div id="cart-items-list" class="modal-body-scrollable">
+                    </div>
+                <div class="cart-summary-box">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Total Bayar:</span>
+                        <strong id="cart-total-price" style="color: #2ea043; font-size: 1.15rem;">Rp 0</strong>
+                    </div>
+                    <button class="checkout-btn" onclick="checkoutDariKeranjang()">Checkout Semua (<span id="cart-total-items">0</span>)</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-riwayat" class="modal">
+            <div class="modal-content-dark">
+                <div class="modal-header-dark">
+                    <h3><i class="fas fa-history" style="color: #4CAF50;"></i> Riwayat Transaksi</h3>
+                    <span class="close-btn-dark" onclick="closeRiwayat()">&times;</span>
+                </div>
+                <div id="riwayat-items-list" class="modal-body-scrollable">
+                    </div>
+            </div>
+        </div>
+
         <div id="modal-qris" class="modal">
-            <div class="modal-content" style="background-color: #0d1117; color: #ffffff; border-radius: 16px; padding: 16px; max-width: 380px; width: 92%; text-align: left; border: 1px solid #161b22; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); max-height: 92vh; overflow-y: auto; margin: auto;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: #fff;">🧾 Ringkasan & Pembayaran</h3>
-                    <span onclick="closeQris()" style="color: #8b949e; cursor: pointer; font-size: 22px; line-height: 1;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#8b949e'">&times;</span>
+            <div class="modal-content-dark" style="max-width: 380px;">
+                <div class="modal-header-dark">
+                    <h3 id="qris-modal-title">🧾 Ringkasan & Pembayaran</h3>
+                    <span class="close-btn-dark" onclick="closeQris()">&times;</span>
                 </div>
 
-                <!-- Ringkasan Pesanan (compact) -->
-                <div style="background-color: #161b22; border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid #30363d; font-size: 13px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                        <span style="color: #8b949e;">Username</span>
-                        <span id="qris-username" style="font-weight: 600; color: #fff;">-</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                        <span style="color: #8b949e;">Metode</span>
-                        <span id="qris-metode" style="font-weight: 600; color: #fff;">-</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: #8b949e;">Jumlah Robux</span>
-                        <span id="qris-jumlah" style="font-weight: 600; color: #fff;">0 Robux</span>
-                    </div>
-                    <div style="border-top: 1px solid #30363d; padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 700; font-size: 14px;">Total</span>
+                <div class="invoice-box">
+                    <div id="qris-details-container">
+                        </div>
+                    <div style="border-top: 1px solid #30363d; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                        <span style="font-weight: 700; font-size: 14px;">Total Tagihan</span>
                         <span id="qris-total-price" style="color: #2ea043; font-weight: 700; font-size: 18px;">Rp 0</span>
                     </div>
                 </div>
 
-                <!-- QR + Upload berdampingan di desktop, stack di mobile -->
                 <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap;">
-                    <!-- QR Code -->
-                    <div style="flex: 0 0 auto; text-align: center;">
-                        <p style="color: #8b949e; font-size: 11px; margin-bottom: 6px;">Scan untuk bayar</p>
+                    <div style="flex: 0 0 auto; text-align: center; margin: 0 auto;">
+                        <p style="color: #8b949e; font-size: 11px; margin-bottom: 6px;">Scan QRIS KazeRoblox</p>
                         <div style="background:#fff; padding: 7px; border-radius: 8px; border: 2px solid #2ea043; display: inline-block;">
-                            <img src="assets/qris.png" alt="QRIS" style="width: 110px; height: 110px; display: block; border-radius: 4px; object-fit: cover;">
+                            <img src="assets/qris.png" alt="QRIS" style="width: 110px; height: 110px; display: block; border-radius: 4px; object-fit: cover;" onerror="this.src='https://placehold.co/150x150/ffffff/000000?text=QRIS+ADMIN'">
                         </div>
                     </div>
 
-                    <!-- Upload Bukti -->
-                    <div style="flex: 1; min-width: 130px;">
+                    <div style="flex: 1; min-width: 140px;">
                         <p style="color: #e6edf3; font-size: 12px; font-weight: 600; margin-bottom: 6px;">
                             <i class="fas fa-upload" style="color: #2ea043; margin-right: 4px;"></i>Bukti Transfer <span style="color: #f85149;">*</span>
                         </p>
-                        <div id="bukti-upload-area" onclick="document.getElementById('bukti-input').click()"
-                            style="border: 2px dashed #30363d; border-radius: 8px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px;"
-                            onmouseover="this.style.borderColor='#2ea043'; this.style.backgroundColor='rgba(46,160,67,0.05)'"
-                            onmouseout="this.style.borderColor='#30363d'; this.style.backgroundColor='transparent'">
+                        <div id="bukti-upload-area" onclick="document.getElementById('bukti-input').click()" class="upload-dropzone">
                             <i class="fas fa-image" style="font-size: 20px; color: #8b949e;"></i>
-                            <span style="color: #8b949e; font-size: 11px;">Klik pilih gambar</span>
-                            <span style="color: #484f58; font-size: 10px;">JPG/PNG, maks 5MB</span>
+                            <span style="color: #8b949e; font-size: 11px;">Pilih Gambar Bukti</span>
+                            <span style="color: #484f58; font-size: 10px;">Max 5MB</span>
                         </div>
                         <input type="file" id="bukti-input" accept="image/*" style="display: none;">
 
                         <div id="bukti-preview" style="display: none; margin-top: 6px; position: relative;">
-                            <img id="bukti-preview-img" src="" alt="Bukti"
-                                style="width: 100%; border-radius: 8px; border: 1px solid #30363d; max-height: 110px; object-fit: cover;">
-                            <button onclick="hapusBukti()" title="Hapus"
-                                style="position: absolute; top: 4px; right: 4px; background: rgba(248,81,73,0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 11px;">
+                            <img id="bukti-preview-img" src="" alt="Bukti" style="width: 100%; border-radius: 8px; border: 1px solid #30363d; max-height: 100px; object-fit: cover;">
+                            <button onclick="hapusBukti()" title="Hapus" class="btn-remove-bukti">
                                 <i class="fas fa-times"></i>
                             </button>
-                            <p style="color: #3fb950; font-size: 11px; margin-top: 4px; text-align: center;">
-                                <i class="fas fa-check-circle"></i> Bukti dipilih
-                            </p>
                         </div>
                     </div>
                 </div>
 
-                <button id="sudah-bayar-btn" onclick="konfirmasiWhatsApp()"
-                    style="width: 100%; background-color: #2ea043; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; transition: background-color 0.2s;"
-                    onmouseover="if(!this.disabled) this.style.backgroundColor='#3fb950'"
-                    onmouseout="if(!this.disabled) this.style.backgroundColor='#2ea043'">
+                <button id="sudah-bayar-btn" onclick="konfirmasiWhatsApp()" class="pay-submit-btn">
                     Sudah Membayar
                 </button>
             </div>
         </div>
+
     </div>
 
     <script src="script.js"></script>
