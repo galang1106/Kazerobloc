@@ -1,4 +1,4 @@
-// Konfigurasi Harga
+// // Konfigurasi Harga
 const RATES = {
     pending: 110, // 5-7 Hari -> 110 Rupiah per 1 Robux
     instant: 130  // Langsung Masuk -> 130 Rupiah per 1 Robux
@@ -169,16 +169,14 @@ function getActiveRobuxAmount() {
 /* --- FITUR: KERANJANG BELANJA (CART SYSTEM) --- */
 function updateCartBadge() {
     const badge = document.getElementById('cart-badge');
-    if (badge) {
-        badge.innerText = KazeCart.length;
-        badge.style.display = KazeCart.length > 0 ? 'block' : 'none';
-    }
+    badge.innerText = KazeCart.length;
+    badge.style.display = KazeCart.length > 0 ? 'block' : 'none';
 }
 
 function tambahKeKeranjang() {
     const username = document.getElementById('username').value.trim();
-    if (!username) {
-        alert("Silakan masukkan Username Roblox terlebih dahulu!");
+    if (!username || !isUsernameValid) {
+        alert("Silakan masukkan Username Roblox yang terverifikasi dahulu!");
         return;
     }
     
@@ -230,7 +228,7 @@ function renderCartList() {
         return;
     }
 
-    KazeCart.forEach((item, index) => {
+    KazeCart.forEach((item) => {
         total += item.price;
         const div = document.createElement('div');
         div.className = 'cart-item-card';
@@ -303,8 +301,8 @@ function renderRiwayatList() {
 /* --- LOGIKA CHECKOUT & TAMPILAN QRIS --- */
 function beliSekarangDirect() {
     const username = document.getElementById('username').value.trim();
-    if (!username) {
-        alert("Silakan masukkan Username Roblox terlebih dahulu!");
+    if (!username || !isUsernameValid) {
+        alert("Silakan masukkan Username Roblox yang terverifikasi terlebih dahulu!");
         return;
     }
     
@@ -319,7 +317,7 @@ function beliSekarangDirect() {
         return;
     }
 
-    const typeName = currentMode === 'pending' ? '5-7 Hari (Gamepass)' : 'Langsung Masuk (Instant)';
+    const typeName = currentMode === 'pending' ? 'Robux 5-7 Hari' : 'Langsung Masuk';
 
     checkoutContext.type = 'direct';
     checkoutContext.data = {
@@ -370,10 +368,8 @@ function openQrisModal(totalFormatted, detailsHtml) {
     document.getElementById('bukti-upload-area').style.display = 'flex';
     
     const btn = document.getElementById('sudah-bayar-btn');
-    if (btn) {
-        btn.disabled = false;
-        btn.innerText = 'Sudah Membayar';
-    }
+    btn.disabled = false;
+    btn.innerText = 'Sudah Membayar';
 
     document.getElementById('modal-qris').style.display = 'flex';
 }
@@ -389,7 +385,7 @@ function hapusBukti() {
     document.getElementById('bukti-upload-area').style.display = 'flex';
 }
 
-/* --- KONFIRMASI PEMBAYARAN & WHATSAPP REDIRECT --- */
+/* --- KONFIRMASI PEMBAYARAN & DISCORD WEBHOOK REDIRECT --- */
 async function konfirmasiWhatsApp() {
     if (!buktiFile) {
         alert('Mohon upload bukti foto transfer/scan yang sah terlebih dahulu!');
@@ -397,28 +393,17 @@ async function konfirmasiWhatsApp() {
     }
 
     const btn = document.getElementById('sudah-bayar-btn');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-    }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
     const timestamp = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
     let totalBayarStr = formatRupiah(checkoutContext.data.totalHarga);
-    
-    let payloadBackend = {
-        username: '-',
-        userId: '-',
-        metode: 'QRIS',
-        jumlahRobux: 0,
-        totalHarga: totalBayarStr,
-        status: 'PENDING (Mengecek Bukti)',
-        buktiBase64: null,
-        buktiMimeType: buktiFile.type
-    };
-
     let orderLog = {};
-    let pesanWA = `Halo Admin KazeRoblox, saya sudah membayar TopUp Robux.%0A%0A*Detail Pesanan:*%0A`;
 
+    let pesanWA = `Halo Admin KazeRoblox, saya sudah membayar TopUp Robux.%0A%0A*Detail Pesanan:*%0A`;
+    let payloadPayload = {};
+
+    // Perbaikan Sinkronisasi Properti Sesuai Kebutuhan Backend Webhook Anda
     if (checkoutContext.type === 'direct') {
         const d = checkoutContext.data;
         pesanWA += `- Username: ${d.username}%0A- Layanan: ${d.metode}%0A- Jumlah: ${d.jumlahRobux} Rbx%0A`;
@@ -431,25 +416,18 @@ async function konfirmasiWhatsApp() {
             totalHarga: totalBayarStr
         };
 
-        payloadBackend.username = d.username;
-        payloadBackend.userId = d.userId ? String(d.userId) : '-';
-        payloadBackend.metode = d.metode;
-        payloadBackend.jumlahRobux = d.jumlahRobux;
-
+        payloadPayload = {
+            username: d.username,
+            userId: d.userId || '-',
+            metode: d.metode,
+            jumlahRobux: d.jumlahRobux,
+            totalHarga: totalBayarStr,
+            status: 'PENDING (Check Bukti)'
+        };
     } else {
         pesanWA += `*Checkout Multi-Item (Keranjang):*%0A`;
-        
-        let listUsername = [];
-        let listUserId = [];
-        let listMetode = [];
-        let totalRobux = 0;
-
         checkoutContext.data.items.forEach((item, idx) => {
             pesanWA += `${idx+1}. ${item.robux} Rbx (${item.modeText}) -> User: ${item.username}%0A`;
-            listUsername.push(item.username);
-            listUserId.push(item.userId);
-            listMetode.push(`${item.robux}Rbx(${item.modeText})`);
-            totalRobux += parseInt(item.robux);
         });
         
         orderLog = {
@@ -458,31 +436,43 @@ async function konfirmasiWhatsApp() {
             totalHarga: totalBayarStr
         };
 
-        payloadBackend.username = listUsername.join(', ');
-        payloadBackend.userId = listUserId.join(', ');
-        payloadBackend.metode = `Cart [${listMetode.join(', ')}]`;
-        payloadBackend.jumlahRobux = totalRobux;
+        // Menggabungkan rangkuman list jika checkout berasal dari keranjang belanja
+        const summaryUsernames = checkoutContext.data.items.map(i => i.username).join(', ');
+        const summaryRobux = checkoutContext.data.items.reduce((acc, curr) => acc + curr.robux, 0);
+        const summaryModes = checkoutContext.data.items.map(i => i.modeText).join(', ');
+
+        payloadPayload = {
+            username: `[Keranjang] ${summaryUsernames}`,
+            userId: 'Multi-ID',
+            metode: `Multi: ${summaryModes}`,
+            jumlahRobux: summaryRobux,
+            totalHarga: totalBayarStr,
+            status: 'PENDING (Keranjang Belanja)'
+        };
     }
 
     pesanWA += `- Total Bayar: ${totalBayarStr}%0A- Metode: QRIS%0A%0ABerikut saya lampirkan bukti pembayaran digital saya.`;
 
-    // Simpan ke riwayat lokal browser
-    KazeHistory.push(orderLog);
-    localStorage.setItem('kazehistory_data', JSON.stringify(KazeHistory));
-
-    // Eksekusi API Webhook aman (Bypass otomatis jika server offline / localhost)
     try {
         const base64Raw = await fileToBase64(buktiFile);
-        payloadBackend.buktiBase64 = base64Raw.split(',')[1];
+        const cleanBase64 = base64Raw.split(',')[1];
+
+        // Memasukkan berkas Base64 sesuai parameter module.exports backend
+        payloadPayload.buktiBase64 = cleanBase64;
+        payloadPayload.buktiMimeType = buktiFile.type;
 
         await fetch('/api/send-webhook', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payloadBackend)
+            body: JSON.stringify(payloadPayload)
         });
     } catch (err) {
-        console.warn('Gagal memproses otomatis ke API Discord backend. Sistem beralih ke mode manual (Bypass).', err);
+        console.warn('Webhook gagal dikirim ke endpoint backend.', err);
     }
+
+    // Push ke Riwayat dan simpan di Storage lokal
+    KazeHistory.push(orderLog);
+    localStorage.setItem('kazehistory_data', JSON.stringify(KazeHistory));
 
     if (checkoutContext.type === 'cart') {
         KazeCart = [];
@@ -490,7 +480,6 @@ async function konfirmasiWhatsApp() {
         updateCartBadge();
     }
 
-    // Pengalihan WhatsApp yang dijamin tetap berjalan lancar
     const nomorWA = "6282241515939";
     window.open(`https://wa.me/${nomorWA}?text=${pesanWA}`, '_blank');
     closeQris();
