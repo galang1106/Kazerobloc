@@ -175,7 +175,6 @@ function updateCartBadge() {
     }
 }
 
-// Perbaikan tombol tambah ke keranjang agar mendeteksi status validasi username dengan aman
 function tambahKeKeranjang() {
     const username = document.getElementById('username').value.trim();
     if (!username) {
@@ -371,8 +370,10 @@ function openQrisModal(totalFormatted, detailsHtml) {
     document.getElementById('bukti-upload-area').style.display = 'flex';
     
     const btn = document.getElementById('sudah-bayar-btn');
-    btn.disabled = false;
-    btn.innerText = 'Sudah Membayar';
+    if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'Sudah Membayar';
+    }
 
     document.getElementById('modal-qris').style.display = 'flex';
 }
@@ -396,8 +397,10 @@ async function konfirmasiWhatsApp() {
     }
 
     const btn = document.getElementById('sudah-bayar-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+    }
 
     const timestamp = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
     let totalBayarStr = formatRupiah(checkoutContext.data.totalHarga);
@@ -463,11 +466,11 @@ async function konfirmasiWhatsApp() {
 
     pesanWA += `- Total Bayar: ${totalBayarStr}%0A- Metode: QRIS%0A%0ABerikut saya lampirkan bukti pembayaran digital saya.`;
 
-    // Amankan data ke riwayat lokal browser
+    // Simpan ke riwayat lokal browser
     KazeHistory.push(orderLog);
     localStorage.setItem('kazehistory_data', JSON.stringify(KazeHistory));
 
-    // PERBAIKAN UTAMA: Blok try-catch sekarang menangkap kegagalan tanpa mengunci tombol WA
+    // Eksekusi API Webhook aman (Bypass otomatis jika server offline / localhost)
     try {
         const base64Raw = await fileToBase64(buktiFile);
         payloadBackend.buktiBase64 = base64Raw.split(',')[1];
@@ -487,7 +490,7 @@ async function konfirmasiWhatsApp() {
         updateCartBadge();
     }
 
-    // Bagian pengalihan ke WhatsApp yang dijamin tetap berjalan lancar
+    // Pengalihan WhatsApp yang dijamin tetap berjalan lancar
     const nomorWA = "6282241515939";
     window.open(`https://wa.me/${nomorWA}?text=${pesanWA}`, '_blank');
     closeQris();
