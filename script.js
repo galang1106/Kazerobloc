@@ -160,7 +160,6 @@ function updateBottomPrice() {
     document.getElementById('bottom-total-price').innerText = formatRupiah(currentPrice);
 }
 
-// Fungsi bantu untuk mendapatkan jumlah robux aktif yang diinput/dipilih
 function getActiveRobuxAmount() {
     if (selectedRobux > 0) return selectedRobux;
     const inputVal = document.getElementById('custom-robux').value;
@@ -187,7 +186,6 @@ function tambahKeKeranjang() {
         return;
     }
     
-    // Validasi Minimal Top Up
     if (robuxAmount < MIN_ROBUX) {
         alert(`Maaf, minimal top up adalah ${MIN_ROBUX} Robux!`);
         return;
@@ -314,7 +312,6 @@ function beliSekarangDirect() {
         return;
     }
 
-    // Validasi Minimal Top Up
     if (robuxAmount < MIN_ROBUX) {
         alert(`Maaf, minimal top up adalah ${MIN_ROBUX} Robux!`);
         return;
@@ -401,8 +398,20 @@ async function konfirmasiWhatsApp() {
 
     const timestamp = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
     let totalBayarStr = formatRupiah(checkoutContext.data.totalHarga);
-    let orderLog = {};
+    
+    // Default struktur payload objek tunggal untuk dicerna backend v1.0
+    let payloadBackend = {
+        username: '-',
+        userId: '-',
+        metode: 'QRIS',
+        jumlahRobux: 0,
+        totalHarga: totalBayarStr,
+        status: 'PENDING (Mengecek Bukti)',
+        buktiBase64: null,
+        buktiMimeType: buktiFile.type
+    };
 
+    let orderLog = {};
     let pesanWA = `Halo Admin KazeRoblox, saya sudah membayar TopUp Robux.%0A%0A*Detail Pesanan:*%0A`;
 
     if (checkoutContext.type === 'direct') {
@@ -416,10 +425,28 @@ async function konfirmasiWhatsApp() {
             metode: d.metode,
             totalHarga: totalBayarStr
         };
+
+        // Mengisi payload backend tunggal secara akurat
+        payloadBackend.username = d.username;
+        payloadBackend.userId = d.userId ? String(d.userId) : '-';
+        payloadBackend.metode = d.metode;
+        payloadBackend.jumlahRobux = d.jumlahRobux;
+
     } else {
+        // Jika checkout berasal dari Keranjang Belanja (Multi-Item)
         pesanWA += `*Checkout Multi-Item (Keranjang):*%0A`;
+        
+        let listUsername = [];
+        let listUserId = [];
+        let listMetode = [];
+        let totalRobux = 0;
+
         checkoutContext.data.items.forEach((item, idx) => {
             pesanWA += `${idx+1}. ${item.robux} Rbx (${item.modeText}) -> User: ${item.username}%0A`;
+            listUsername.push(item.username);
+            listUserId.push(item.userId);
+            listMetode.push(`${item.robux}Rbx(${item.modeText})`);
+            totalRobux += parseInt(item.robux);
         });
         
         orderLog = {
@@ -427,39 +454,42 @@ async function konfirmasiWhatsApp() {
             items: checkoutContext.data.items,
             totalHarga: totalBayarStr
         };
+
+        // Menggabungkan list data keranjang menjadi teks terpisah koma agar rapi di Embed Discord Backend
+        payloadBackend.username = listUsername.join(', ');
+        payloadBackend.userId = listUserId.join(', ');
+        payloadBackend.metode = `Cart [${listMetode.join(', ')}]`;
+        payloadBackend.jumlahRobux = totalRobux;
     }
 
     pesanWA += `- Total Bayar: ${totalBayarStr}%0A- Metode: QRIS%0A%0ABerikut saya lampirkan bukti pembayaran digital saya.`;
 
+    // Amankan data ke riwayat lokal browser
     KazeHistory.push(orderLog);
     localStorage.setItem('kazehistory_data', JSON.stringify(KazeHistory));
 
     try {
         const base64Raw = await fileToBase64(buktiFile);
-        const cleanBase64 = base64Raw.split(',')[1];
+        payloadBackend.buktiBase64 = base64Raw.split(',')[1];
 
+        // Eksekusi pengiriman data ke server backend api/send-webhook.js Anda
         await fetch('/api/send-webhook', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                context: checkoutContext.type,
-                details: checkoutContext.data,
-                totalHarga: totalBayarStr,
-                buktiBase64: cleanBase64,
-                buktiMimeType: buktiFile.type,
-                waktu: timestamp
-            })
+            body: JSON.stringify(payloadBackend)
         });
     } catch (err) {
-        console.warn('Webhook bypassed / serverless mode.');
+        console.warn('Gagal memproses pengiriman webhook otomatis atau bypass serverless.', err);
     }
 
+    // Jika checkout dari keranjang sukses, bersihkan item keranjang saat ini
     if (checkoutContext.type === 'cart') {
         KazeCart = [];
         localStorage.setItem('kazecart_data', JSON.stringify(KazeCart));
         updateCartBadge();
     }
 
+    // Alihkan user ke WhatsApp admin bawaan toko
     const nomorWA = "6282241515939";
     window.open(`https://wa.me/${nomorWA}?text=${pesanWA}`, '_blank');
     closeQris();
