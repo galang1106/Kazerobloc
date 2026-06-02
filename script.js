@@ -4,22 +4,36 @@ const RATES = {
     instant: 130  // Langsung Masuk -> 130 Rupiah per 1 Robux
 };
 
+const MIN_ROBUX = 100; // Batas Minimal Top Up
+
 let currentMode = 'pending';
 let selectedRobux = 0;
 let currentPrice = 0;
 
-/* --- CEK USERNAME ROBLOX --- */
+/* --- LOGIKA STATE SELLER --- */
 let usernameCheckTimeout = null;
 let isUsernameValid = false;
 let verifiedUserId = null;
 let verifiedUsername = null;
-
-// Simpan file bukti yang diupload
 let buktiFile = null;
 
+// Keranjang & Riwayat Storage Setup
+let KazeCart = JSON.parse(localStorage.getItem('kazecart_data')) || [];
+let KazeHistory = JSON.parse(localStorage.getItem('kazehistory_data')) || [];
+let checkoutContext = { type: 'direct', data: null }; // 'direct' atau 'cart'
+
+// Array Paket Default (Semua di atas atau sama dengan 100 Robux)
+const packages = [
+    100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 2000, 3000, 4000, 5000
+];
+
+function formatRupiah(angka) {
+    return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+/* --- CEK USERNAME ROBLOX --- */
 async function checkRobloxUsername(username) {
     const statusEl = document.getElementById('username-status');
-
     if (!username || username.trim() === '') {
         statusEl.innerHTML = '';
         isUsernameValid = false;
@@ -27,7 +41,7 @@ async function checkRobloxUsername(username) {
         return;
     }
 
-    statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengecek username...</span>`;
+    statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengecek...</span>`;
 
     try {
         const response = await fetch('/api/check-username', {
@@ -35,7 +49,6 @@ async function checkRobloxUsername(username) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: username.trim() })
         });
-
         const data = await response.json();
 
         if (data.exists === true) {
@@ -55,25 +68,13 @@ async function checkRobloxUsername(username) {
                         <span class="status-id">ID: ${data.userId}</span>
                     </div>
                 </div>`;
-
-        } else if (data.exists === false) {
-            isUsernameValid = false;
-            verifiedUserId = null;
-            verifiedUsername = null;
-            statusEl.innerHTML = `<span class="status-invalid"><i class="fas fa-times-circle"></i> ${data.error || 'Username tidak ditemukan di Roblox'}</span>`;
-
         } else {
             isUsernameValid = false;
-            verifiedUserId = null;
-            verifiedUsername = null;
-            statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> ${data.error || 'Gagal mengecek, coba lagi'}</span>`;
+            statusEl.innerHTML = `<span class="status-invalid"><i class="fas fa-times-circle"></i> ${data.error || 'User tidak ada'}</span>`;
         }
-
     } catch (err) {
         isUsernameValid = false;
-        verifiedUserId = null;
-        verifiedUsername = null;
-        statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> Gagal terhubung ke server</span>`;
+        statusEl.innerHTML = `<span class="status-error"><i class="fas fa-exclamation-triangle"></i> Gagal terhubung</span>`;
     }
 }
 
@@ -81,7 +82,6 @@ function onUsernameInput() {
     clearTimeout(usernameCheckTimeout);
     isUsernameValid = false;
     verifiedUserId = null;
-    verifiedUsername = null;
 
     const val = document.getElementById('username').value;
     const statusEl = document.getElementById('username-status');
@@ -92,50 +92,33 @@ function onUsernameInput() {
     }
 
     statusEl.innerHTML = `<span class="status-loading"><i class="fas fa-spinner fa-spin"></i> Mengetik...</span>`;
-
-    usernameCheckTimeout = setTimeout(() => {
-        checkRobloxUsername(val);
-    }, 800);
+    usernameCheckTimeout = setTimeout(() => { checkRobloxUsername(val); }, 800);
 }
 
-const packages = [
-    100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
-    2000, 3000, 4000, 5000
-];
-
-function formatRupiah(angka) {
-    return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
+/* --- SELECTION & CALCULATION CONTROLLERS --- */
 function setMode(mode) {
     currentMode = mode;
-
     document.getElementById('tab-pending').classList.remove('active');
     document.getElementById('tab-instant').classList.remove('active');
     document.getElementById(`tab-${mode}`).classList.add('active');
 
-    const warning = document.getElementById('warning-instant');
-    warning.style.display = mode === 'instant' ? 'block' : 'none';
-
+    document.getElementById('warning-instant').style.display = mode === 'instant' ? 'block' : 'none';
     renderGrid();
     calculateCustomPrice();
 }
 
 function renderGrid() {
     const grid = document.getElementById('product-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     packages.forEach(amount => {
         const price = amount * RATES[currentMode];
-
         const card = document.createElement('div');
         card.className = `product-card ${selectedRobux === amount ? 'selected' : ''}`;
         card.onclick = () => selectPackage(amount, price);
-
         card.innerHTML = `
-            <div class="rbx-amount">
-                <i class="fas fa-gem"></i> ${amount}
-            </div>
+            <div class="rbx-amount"><i class="fas fa-gem"></i> ${amount}</div>
             <div class="price">${formatRupiah(price)}</div>
         `;
         grid.appendChild(card);
@@ -145,36 +128,31 @@ function renderGrid() {
 function selectPackage(amount, price) {
     selectedRobux = amount;
     currentPrice = price;
-
     document.getElementById('custom-robux').value = '';
     document.getElementById('custom-price').innerText = 'Rp 0';
-
     updateBottomPrice();
     renderGrid();
 }
 
 function calculateCustomPrice() {
     const inputVal = document.getElementById('custom-robux').value;
-
     if (inputVal && inputVal > 0) {
         selectedRobux = 0;
         renderGrid();
-
         let amount = parseInt(inputVal);
-
+        
         if (amount > 5000) {
             amount = 5000;
             document.getElementById('custom-robux').value = 5000;
             alert('Maksimal pembelian adalah 5000 Robux per transaksi.');
         }
-
+        
         currentPrice = amount * RATES[currentMode];
         document.getElementById('custom-price').innerText = formatRupiah(currentPrice);
     } else {
-        currentPrice = 0;
+        if (selectedRobux === 0) currentPrice = 0;
         document.getElementById('custom-price').innerText = 'Rp 0';
     }
-
     updateBottomPrice();
 }
 
@@ -182,90 +160,219 @@ function updateBottomPrice() {
     document.getElementById('bottom-total-price').innerText = formatRupiah(currentPrice);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderGrid();
-
-    // Handler upload bukti transfer
-    const buktiInput = document.getElementById('bukti-input');
-    const buktiPreview = document.getElementById('bukti-preview');
-    const buktiPreviewImg = document.getElementById('bukti-preview-img');
-    const buktiUploadArea = document.getElementById('bukti-upload-area');
-
-    if (buktiInput) {
-        buktiInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Validasi tipe file
-            if (!file.type.startsWith('image/')) {
-                alert('Hanya file gambar yang diperbolehkan (JPG, PNG, dll).');
-                buktiInput.value = '';
-                return;
-            }
-
-            // Validasi ukuran (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Ukuran file maksimal 5MB.');
-                buktiInput.value = '';
-                return;
-            }
-
-            buktiFile = file;
-
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                buktiPreviewImg.src = ev.target.result;
-                buktiPreview.style.display = 'block';
-                buktiUploadArea.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-});
-
-/* --- FUNGSI MODAL CARA BELI --- */
-function openCaraBeli() {
-    document.getElementById('modal-cara-beli').style.display = 'flex';
+// Fungsi bantu untuk mendapatkan jumlah robux aktif yang diinput/dipilih
+function getActiveRobuxAmount() {
+    if (selectedRobux > 0) return selectedRobux;
+    const inputVal = document.getElementById('custom-robux').value;
+    return inputVal ? parseInt(inputVal) : 0;
 }
 
-function closeCaraBeli() {
-    document.getElementById('modal-cara-beli').style.display = 'none';
+/* --- FITUR: KERANJANG BELANJA (CART SYSTEM) --- */
+function updateCartBadge() {
+    const badge = document.getElementById('cart-badge');
+    badge.innerText = KazeCart.length;
+    badge.style.display = KazeCart.length > 0 ? 'block' : 'none';
 }
 
-/* --- FUNGSI POP-UP QRIS --- */
-function beliSekarang() {
-    const username = document.getElementById('username').value;
-
-    if (!username) {
-        alert("Silakan masukkan Username Roblox kamu terlebih dahulu!");
+function tambahKeKeranjang() {
+    const username = document.getElementById('username').value.trim();
+    if (!username || !isUsernameValid) {
+        alert("Silakan masukkan Username Roblox yang terverifikasi dahulu!");
+        return;
+    }
+    
+    const robuxAmount = getActiveRobuxAmount();
+    if (robuxAmount === 0) {
+        alert("Pilih nominal paket atau masukkan jumlah Robux dahulu!");
+        return;
+    }
+    
+    // Validasi Minimal Top Up
+    if (robuxAmount < MIN_ROBUX) {
+        alert(`Maaf, minimal top up adalah ${MIN_ROBUX} Robux!`);
         return;
     }
 
-    if (!isUsernameValid) {
-        alert("Username Roblox tidak valid atau belum terverifikasi. Pastikan username benar dan tunggu proses pengecekan selesai.");
+    const item = {
+        id: Date.now() + Math.random().toString(36).substr(2, 5),
+        username: verifiedUsername || username,
+        userId: verifiedUserId || '-',
+        mode: currentMode,
+        modeText: currentMode === 'pending' ? '5-7 Hari' : 'Instant',
+        robux: robuxAmount,
+        price: currentPrice
+    };
+
+    KazeCart.push(item);
+    localStorage.setItem('kazecart_data', JSON.stringify(KazeCart));
+    updateCartBadge();
+    alert(`Berhasil memasukkan ${item.robux} Robux untuk user ${item.username} ke keranjang.`);
+}
+
+function openKeranjang() {
+    renderCartList();
+    document.getElementById('modal-keranjang').style.display = 'flex';
+}
+
+function closeKeranjang() {
+    document.getElementById('modal-keranjang').style.display = 'none';
+}
+
+function renderCartList() {
+    const container = document.getElementById('cart-items-list');
+    container.innerHTML = '';
+    let total = 0;
+
+    if (KazeCart.length === 0) {
+        container.innerHTML = `<p style="color: #8b949e; text-align: center; padding: 20px 0; font-size: 13px;">Keranjang kosong.</p>`;
+        document.getElementById('cart-total-price').innerText = 'Rp 0';
+        document.getElementById('cart-total-items').innerText = '0';
         return;
     }
 
-    if (currentPrice === 0) {
-        alert("Silakan pilih atau masukkan jumlah Robux yang ingin dibeli.");
+    KazeCart.forEach((item, index) => {
+        total += item.price;
+        const div = document.createElement('div');
+        div.className = 'cart-item-card';
+        div.innerHTML = `
+            <div class="cart-item-details">
+                <h4>${item.robux} Robux (${item.modeText})</h4>
+                <p><i class="fas fa-user"></i> ${item.username} | ${formatRupiah(item.price)}</p>
+            </div>
+            <button class="cart-item-remove-btn" onclick="hapusItemKeranjang('${item.id}')" title="Hapus">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    });
+
+    document.getElementById('cart-total-price').innerText = formatRupiah(total);
+    document.getElementById('cart-total-items').innerText = KazeCart.length;
+}
+
+function hapusItemKeranjang(id) {
+    KazeCart = KazeCart.filter(item => item.id !== id);
+    localStorage.setItem('kazecart_data', JSON.stringify(KazeCart));
+    updateCartBadge();
+    renderCartList();
+}
+
+/* --- FITUR: RIWAYAT PEMBELIAN (HISTORY SYSTEM) --- */
+function openRiwayat() {
+    renderRiwayatList();
+    document.getElementById('modal-riwayat').style.display = 'flex';
+}
+
+function closeRiwayat() {
+    document.getElementById('modal-riwayat').style.display = 'none';
+}
+
+function renderRiwayatList() {
+    const container = document.getElementById('riwayat-items-list');
+    container.innerHTML = '';
+
+    if (KazeHistory.length === 0) {
+        container.innerHTML = `<p style="color: #8b949e; text-align: center; padding: 20px 0; font-size: 13px;">Belum ada riwayat pembelian.</p>`;
         return;
     }
 
-    const robuxAmount = selectedRobux > 0 ? selectedRobux : document.getElementById('custom-robux').value;
+    [...KazeHistory].reverse().forEach(data => {
+        const div = document.createElement('div');
+        div.className = 'riwayat-card';
+        
+        let itemSummary = '';
+        if (data.items && Array.isArray(data.items)) {
+            itemSummary = data.items.map(i => `- ${i.robux} Rbx (${i.modeText}) untuk ${i.username}`).join('<br>');
+        } else {
+            itemSummary = `- ${data.jumlahRobux} Rbx (${data.metode}) untuk ${data.username}`;
+        }
+
+        div.innerHTML = `
+            <div class="riwayat-date">${data.waktu}</div>
+            <div style="margin-bottom: 6px; font-weight: 600; color: #fff;">Invoice Belanja:</div>
+            <div style="color: #c9d1d9; margin-bottom: 6px; line-height: 1.4;">${itemSummary}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #21262d; padding-top: 5px;">
+                <span style="color: #8b949e;">Total Bayar:</span>
+                <strong style="color: #2ea043;">${data.totalHarga}</strong>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+/* --- LOGIKA CHECKOUT & TAMPILAN QRIS --- */
+function beliSekarangDirect() {
+    const username = document.getElementById('username').value.trim();
+    if (!username || !isUsernameValid) {
+        alert("Silakan masukkan Username Roblox yang terverifikasi terlebih dahulu!");
+        return;
+    }
+    
+    const robuxAmount = getActiveRobuxAmount();
+    if (robuxAmount === 0) {
+        alert("Silakan pilih paket produk terlebih dahulu.");
+        return;
+    }
+
+    // Validasi Minimal Top Up
+    if (robuxAmount < MIN_ROBUX) {
+        alert(`Maaf, minimal top up adalah ${MIN_ROBUX} Robux!`);
+        return;
+    }
+
     const typeName = currentMode === 'pending' ? '5-7 Hari (Gamepass)' : 'Langsung Masuk (Instant)';
 
-    document.getElementById('qris-username').innerText = username;
-    document.getElementById('qris-metode').innerText = typeName;
-    document.getElementById('qris-jumlah').innerText = `${robuxAmount} Robux`;
-    document.getElementById('qris-total-price').innerText = formatRupiah(currentPrice);
+    checkoutContext.type = 'direct';
+    checkoutContext.data = {
+        username: verifiedUsername || username,
+        userId: verifiedUserId,
+        metode: typeName,
+        jumlahRobux: robuxAmount,
+        totalHarga: currentPrice
+    };
 
-    // Reset bukti upload
+    openQrisModal(formatRupiah(currentPrice), `
+        <div class="invoice-row-item"><span>Username</span><span>${verifiedUsername || username}</span></div>
+        <div class="invoice-row-item"><span>Layanan</span><span>${typeName}</span></div>
+        <div class="invoice-row-item"><span>Jumlah</span><span>${robuxAmount} Robux</span></div>
+    `);
+}
+
+function checkoutDariKeranjang() {
+    if (KazeCart.length === 0) {
+        alert("Keranjang kamu kosong.");
+        return;
+    }
+
+    let total = 0;
+    let htmlDetails = '';
+    KazeCart.forEach(item => {
+        total += item.price;
+        htmlDetails += `<div class="invoice-row-item"><span>${item.robux} Rbx (${item.modeText})</span><span style="color:#8b949e;">${item.username}</span></div>`;
+    });
+
+    checkoutContext.type = 'cart';
+    checkoutContext.data = {
+        items: [...KazeCart],
+        totalHarga: total
+    };
+
+    closeKeranjang();
+    openQrisModal(formatRupiah(total), htmlDetails);
+}
+
+function openQrisModal(totalFormatted, detailsHtml) {
+    document.getElementById('qris-details-container').innerHTML = detailsHtml;
+    document.getElementById('qris-total-price').innerText = totalFormatted;
+
     buktiFile = null;
     document.getElementById('bukti-input').value = '';
     document.getElementById('bukti-preview').style.display = 'none';
     document.getElementById('bukti-upload-area').style.display = 'flex';
-    document.getElementById('sudah-bayar-btn').disabled = false;
-    document.getElementById('sudah-bayar-btn').innerText = 'Sudah Membayar';
+    
+    const btn = document.getElementById('sudah-bayar-btn');
+    btn.disabled = false;
+    btn.innerText = 'Sudah Membayar';
 
     document.getElementById('modal-qris').style.display = 'flex';
 }
@@ -281,69 +388,80 @@ function hapusBukti() {
     document.getElementById('bukti-upload-area').style.display = 'flex';
 }
 
-/* --- FUNGSI KIRIM WEBHOOK + WA --- */
+/* --- KONFIRMASI PEMBAYARAN & WHATSAPP REDIRECT --- */
 async function konfirmasiWhatsApp() {
     if (!buktiFile) {
-        alert('Mohon upload bukti transfer terlebih dahulu sebelum melanjutkan.');
+        alert('Mohon upload bukti foto transfer/scan yang sah terlebih dahulu!');
         return;
     }
 
     const btn = document.getElementById('sudah-bayar-btn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+    const timestamp = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+    let totalBayarStr = formatRupiah(checkoutContext.data.totalHarga);
+    let orderLog = {};
+
+    let pesanWA = `Halo Admin KazeRoblox, saya sudah membayar TopUp Robux.%0A%0A*Detail Pesanan:*%0A`;
+
+    if (checkoutContext.type === 'direct') {
+        const d = checkoutContext.data;
+        pesanWA += `- Username: ${d.username}%0A- Layanan: ${d.metode}%0A- Jumlah: ${d.jumlahRobux} Rbx%0A`;
+        
+        orderLog = {
+            waktu: timestamp,
+            username: d.username,
+            jumlahRobux: d.jumlahRobux,
+            metode: d.metode,
+            totalHarga: totalBayarStr
+        };
+    } else {
+        pesanWA += `*Checkout Multi-Item (Keranjang):*%0A`;
+        checkoutContext.data.items.forEach((item, idx) => {
+            pesanWA += `${idx+1}. ${item.robux} Rbx (${item.modeText}) -> User: ${item.username}%0A`;
+        });
+        
+        orderLog = {
+            waktu: timestamp,
+            items: checkoutContext.data.items,
+            totalHarga: totalBayarStr
+        };
+    }
+
+    pesanWA += `- Total Bayar: ${totalBayarStr}%0A- Metode: QRIS%0A%0ABerikut saya lampirkan bukti pembayaran digital saya.`;
+
+    KazeHistory.push(orderLog);
+    localStorage.setItem('kazehistory_data', JSON.stringify(KazeHistory));
 
     try {
-        // Konversi gambar ke base64
-        const buktiBase64 = await fileToBase64(buktiFile);
-        const base64Data = buktiBase64.split(',')[1]; // Hapus prefix data:image/...;base64,
+        const base64Raw = await fileToBase64(buktiFile);
+        const cleanBase64 = base64Raw.split(',')[1];
 
-        const username = document.getElementById('username').value;
-        const robuxAmount = selectedRobux > 0 ? selectedRobux : document.getElementById('custom-robux').value;
-        const typeName = currentMode === 'pending' ? '5-7 Hari (Gamepass)' : 'Langsung Masuk (Instant)';
-
-        // Kirim ke webhook
-        const webhookRes = await fetch('/api/send-webhook', {
+        await fetch('/api/send-webhook', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                username: verifiedUsername || username,
-                userId: verifiedUserId,
-                metode: typeName,
-                jumlahRobux: robuxAmount,
-                totalHarga: formatRupiah(currentPrice),
-                status: 'SELESAI - Bukti Diterima',
-                buktiBase64: base64Data,
-                buktiMimeType: buktiFile.type
+                context: checkoutContext.type,
+                details: checkoutContext.data,
+                totalHarga: totalBayarStr,
+                buktiBase64: cleanBase64,
+                buktiMimeType: buktiFile.type,
+                waktu: timestamp
             })
         });
-
-        if (!webhookRes.ok) {
-            console.warn('Webhook gagal, tapi transaksi dilanjutkan');
-        }
-
     } catch (err) {
-        console.warn('Webhook error:', err);
-        // Tetap lanjut ke WhatsApp meski webhook gagal
+        console.warn('Webhook bypassed / serverless mode.');
     }
 
-    // Redirect ke WhatsApp
-    const username = document.getElementById('username').value;
-    const typeName = currentMode === 'pending' ? '5-7 Hari' : 'Langsung Masuk (Instant)';
-    const robuxAmount = selectedRobux > 0 ? selectedRobux : document.getElementById('custom-robux').value;
-    const totalBayar = formatRupiah(currentPrice);
+    if (checkoutContext.type === 'cart') {
+        KazeCart = [];
+        localStorage.setItem('kazecart_data', JSON.stringify(KazeCart));
+        updateCartBadge();
+    }
+
     const nomorWA = "6282241515939";
-
-    const pesan =
-        `Halo Admin KazeRoblox, saya sudah membayar TopUp Robux.%0A%0A` +
-        `*Detail Pesanan:*%0A` +
-        `- Username: ${username}%0A` +
-        `- Layanan: ${typeName}%0A` +
-        `- Jumlah: ${robuxAmount} Rbx%0A` +
-        `- Total Bayar: ${totalBayar}%0A` +
-        `- Metode: QRIS%0A%0A` +
-        `Berikut saya lampirkan bukti transfernya.`;
-
-    window.open(`https://wa.me/${nomorWA}?text=${pesan}`, '_blank');
+    window.open(`https://wa.me/${nomorWA}?text=${pesanWA}`, '_blank');
     closeQris();
 }
 
@@ -356,10 +474,57 @@ function fileToBase64(file) {
     });
 }
 
-window.onclick = function (event) {
-    let modalCaraBeli = document.getElementById('modal-cara-beli');
-    let modalQris = document.getElementById('modal-qris');
+/* --- EVENT LISTENERS INITIALIZATION --- */
+document.addEventListener('DOMContentLoaded', () => {
+    renderGrid();
+    updateCartBadge();
 
-    if (event.target == modalCaraBeli) modalCaraBeli.style.display = "none";
-    if (event.target == modalQris) modalQris.style.display = "none";
+    const buktiInput = document.getElementById('bukti-input');
+    const buktiPreview = document.getElementById('bukti-preview');
+    const buktiPreviewImg = document.getElementById('bukti-preview-img');
+    const buktiUploadArea = document.getElementById('bukti-upload-area');
+
+    if (buktiInput) {
+        buktiInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Hanya file gambar yang diperbolehkan!');
+                buktiInput.value = '';
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ukuran file maksimal 5MB.');
+                buktiInput.value = '';
+                return;
+            }
+
+            buktiFile = file;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                buktiPreviewImg.src = ev.target.result;
+                buktiPreview.style.display = 'block';
+                buktiUploadArea.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+});
+
+/* --- POP-UP CLOSER HANDLING --- */
+function openCaraBeli() { document.getElementById('modal-cara-beli').style.display = 'flex'; }
+function closeCaraBeli() { document.getElementById('modal-cara-beli').style.display = 'none'; }
+
+window.onclick = function (event) {
+    const mc = document.getElementById('modal-cara-beli');
+    const mq = document.getElementById('modal-qris');
+    const mk = document.getElementById('modal-keranjang');
+    const mr = document.getElementById('modal-riwayat');
+
+    if (event.target == mc) mc.style.display = "none";
+    if (event.target == mq) mq.style.display = "none";
+    if (event.target == mk) mk.style.display = "none";
+    if (event.target == mr) mr.style.display = "none";
 };
