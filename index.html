@@ -150,8 +150,7 @@
                     <h3><i class="fas fa-shopping-cart" style="color: #4CAF50;"></i> Keranjang Kamu</h3>
                     <span class="close-btn-dark" onclick="closeKeranjang()">&times;</span>
                 </div>
-                <div id="cart-items-list" class="modal-body-scrollable">
-                    </div>
+                <div id="cart-items-list" class="modal-body-scrollable"></div>
                 <div class="cart-summary-box">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span>Total Bayar:</span>
@@ -168,8 +167,7 @@
                     <h3><i class="fas fa-history" style="color: #4CAF50;"></i> Riwayat Transaksi</h3>
                     <span class="close-btn-dark" onclick="closeRiwayat()">&times;</span>
                 </div>
-                <div id="riwayat-items-list" class="modal-body-scrollable">
-                    </div>
+                <div id="riwayat-items-list" class="modal-body-scrollable"></div>
             </div>
         </div>
 
@@ -181,8 +179,7 @@
                 </div>
 
                 <div class="invoice-box">
-                    <div id="qris-details-container">
-                        </div>
+                    <div id="qris-details-container"></div>
                     <div style="border-top: 1px solid #30363d; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
                         <span style="font-weight: 700; font-size: 14px;">Total Tagihan</span>
                         <span id="qris-total-price" style="color: #2ea043; font-weight: 700; font-size: 18px;">Rp 0</span>
@@ -217,7 +214,7 @@
                     </div>
                 </div>
 
-                <button id="sudah-bayar-btn" onclick="konfirmasiWhatsApp()" class="pay-submit-btn">
+                <button id="sudah-bayar-btn" onclick="prosesPembayaranKeBackend()" class="pay-submit-btn">
                     Sudah Membayar
                 </button>
             </div>
