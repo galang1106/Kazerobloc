@@ -47,7 +47,17 @@
             <section class="section">
                 <h2 class="section-title">Jenis Diinginkan</h2>
                 <div class="type-tabs">
-                    <div class="tab active" id="tab-gift" onclick="setMode('gift')">
+                    <div class="tab active" id="tab-instant" onclick="setMode('instant')">
+                        <span class="badge red">Tercepat</span>
+                        <div class="tab-content">
+                            <div>
+                                <h3>Instant (Langsung Masuk)</h3>
+                                <p>Syarat: Join Grup 14 Hari</p>
+                            </div>
+                            <i class="fas fa-bolt icon-green"></i>
+                        </div>
+                    </div>
+                    <div class="tab" id="tab-gift" onclick="setMode('gift')">
                         <span class="badge blue">Garansi 100% Aman</span>
                         <div class="tab-content">
                             <div>
@@ -57,22 +67,12 @@
                             <i class="fas fa-gift icon-blue"></i>
                         </div>
                     </div>
-                    <div class="tab" id="tab-instant" onclick="setMode('instant')">
-                        <span class="badge red">Tercepat</span>
-                        <div class="tab-content">
-                            <div>
-                                <h3>Instant</h3>
-                                <p>Syarat: Join Grup 14 Hari</p>
-                            </div>
-                            <i class="fas fa-bolt icon-green"></i>
-                        </div>
-                    </div>
                 </div>
-                <div id="warning-gift" class="warning-box">
-                    ⚠️ <b>Perhatian:</b> Untuk layanan Via Gift, akun Roblox kamu TIDAK BOLEH menggunakan mode Kids Select. Pastikan akun dalam mode Roblox biasa (bukan Kids Mode).
-                </div>
-                <div id="warning-instant" class="warning-box" style="display: none;">
+                <div id="warning-instant" class="warning-box">
                     ⚠️ <b>Perhatian:</b> Untuk layanan Instant, akun Roblox kamu WAJIB sudah bergabung di komunitas Laxerouse minimal 14 hari.
+                </div>
+                <div id="warning-gift" class="warning-box" style="display: none;">
+                    ⚠️ <b>Perhatian:</b> Untuk layanan Via Gift, akun Roblox kamu TIDAK BOLEH menggunakan mode Kids Select. Pastikan akun dalam mode Roblox biasa (bukan Kids Mode).
                 </div>
             </section>
 
