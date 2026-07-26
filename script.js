@@ -1,13 +1,12 @@
-// Konfigurasi Harga
+// // Konfigurasi Harga
 const RATES = {
-    pending: 110, // 5-7 Hari -> 110 Rupiah per 1 Robux
-    instant: 130, // Langsung Masuk -> 130 Rupiah per 1 Robux
-    gift: 140     // Via Gift Robux -> 140 Rupiah per 1 Robux
+    instant: 130, // Instant -> 130 Rupiah per 1 Robux
+    gift: 140     // Via Gift -> 140 Rupiah per 1 Robux (100 Rbx = Rp14.000)
 };
 
 const MIN_ROBUX = 100; // Batas Minimal Top Up
 
-let currentMode = 'pending';
+let currentMode = 'gift';
 let selectedRobux = 0;
 let currentPrice = 0;
 
@@ -99,25 +98,14 @@ function onUsernameInput() {
 /* --- SELECTION & CALCULATION CONTROLLERS --- */
 function setMode(mode) {
     currentMode = mode;
-    document.getElementById('tab-pending').classList.remove('active');
     document.getElementById('tab-instant').classList.remove('active');
     document.getElementById('tab-gift').classList.remove('active');
     document.getElementById(`tab-${mode}`).classList.add('active');
 
     document.getElementById('warning-instant').style.display = mode === 'instant' ? 'block' : 'none';
     document.getElementById('warning-gift').style.display = mode === 'gift' ? 'block' : 'none';
-    
-    // Jika ada nilai di input custom saat ganti mode, kalkulasi ulang harganya
-    const inputVal = document.getElementById('custom-robux').value;
-    if (inputVal && inputVal > 0) {
-        calculateCustomPrice();
-    } else if (selectedRobux > 0) {
-        // Jika sedang memilih paket grid, sesuaikan harga paket dengan rate mode baru
-        currentPrice = selectedRobux * RATES[currentMode];
-        updateBottomPrice();
-    }
-
     renderGrid();
+    calculateCustomPrice();
 }
 
 function renderGrid() {
@@ -153,17 +141,7 @@ function calculateCustomPrice() {
         selectedRobux = 0;
         renderGrid();
         let amount = parseInt(inputVal);
-        
-        if (currentMode === 'gift' && amount > 5000) {
-            amount = 5000;
-            document.getElementById('custom-robux').value = 5000;
-            alert('Maksimal pembelian via Gift adalah 5000 Robux per transaksi.');
-        } else if (amount > 5000) {
-            amount = 5000;
-            document.getElementById('custom-robux').value = 5000;
-            alert('Maksimal pembelian adalah 5000 Robux per transaksi.');
-        }
-        
+
         currentPrice = amount * RATES[currentMode];
         document.getElementById('custom-price').innerText = formatRupiah(currentPrice);
     } else {
@@ -190,13 +168,6 @@ function updateCartBadge() {
     badge.style.display = KazeCart.length > 0 ? 'block' : 'none';
 }
 
-function getModeText(mode) {
-    if (mode === 'pending') return '5-7 Hari';
-    if (mode === 'instant') return 'Instant';
-    if (mode === 'gift') return 'Via Gift';
-    return mode;
-}
-
 function tambahKeKeranjang() {
     const username = document.getElementById('username').value.trim();
     if (!username || !isUsernameValid) {
@@ -220,7 +191,7 @@ function tambahKeKeranjang() {
         username: verifiedUsername || username,
         userId: verifiedUserId || '-',
         mode: currentMode,
-        modeText: getModeText(currentMode),
+        modeText: currentMode === 'gift' ? 'Via Gift' : 'Instant',
         robux: robuxAmount,
         price: currentPrice
     };
@@ -341,7 +312,7 @@ function beliSekarangDirect() {
         return;
     }
 
-    const typeName = getModeText(currentMode);
+    const typeName = currentMode === 'gift' ? 'Via Gift' : 'Instant';
 
     checkoutContext.type = 'direct';
     checkoutContext.data = {
@@ -427,6 +398,7 @@ async function konfirmasiWhatsApp() {
     let pesanWA = `Halo Admin KazeRoblox, saya sudah membayar TopUp Robux.%0A%0A*Detail Pesanan:*%0A`;
     let payloadPayload = {};
 
+    // Perbaikan Sinkronisasi Properti Sesuai Kebutuhan Backend Webhook Anda
     if (checkoutContext.type === 'direct') {
         const d = checkoutContext.data;
         pesanWA += `- Username: ${d.username}%0A- Layanan: ${d.metode}%0A- Jumlah: ${d.jumlahRobux} Rbx%0A`;
@@ -459,6 +431,7 @@ async function konfirmasiWhatsApp() {
             totalHarga: totalBayarStr
         };
 
+        // Menggabungkan rangkuman list jika checkout berasal dari keranjang belanja
         const summaryUsernames = checkoutContext.data.items.map(i => i.username).join(', ');
         const summaryRobux = checkoutContext.data.items.reduce((acc, curr) => acc + curr.robux, 0);
         const summaryModes = checkoutContext.data.items.map(i => i.modeText).join(', ');
@@ -479,6 +452,7 @@ async function konfirmasiWhatsApp() {
         const base64Raw = await fileToBase64(buktiFile);
         const cleanBase64 = base64Raw.split(',')[1];
 
+        // Memasukkan berkas Base64 sesuai parameter module.exports backend
         payloadPayload.buktiBase64 = cleanBase64;
         payloadPayload.buktiMimeType = buktiFile.type;
 
@@ -491,6 +465,7 @@ async function konfirmasiWhatsApp() {
         console.warn('Webhook gagal dikirim ke endpoint backend.', err);
     }
 
+    // Push ke Riwayat dan simpan di Storage lokal
     KazeHistory.push(orderLog);
     localStorage.setItem('kazehistory_data', JSON.stringify(KazeHistory));
 
@@ -518,6 +493,7 @@ function fileToBase64(file) {
 document.addEventListener('DOMContentLoaded', () => {
     renderGrid();
     updateCartBadge();
+    openGambarPromo();
 
     const buktiInput = document.getElementById('bukti-input');
     const buktiPreview = document.getElementById('bukti-preview');
@@ -557,14 +533,20 @@ document.addEventListener('DOMContentLoaded', () => {
 function openCaraBeli() { document.getElementById('modal-cara-beli').style.display = 'flex'; }
 function closeCaraBeli() { document.getElementById('modal-cara-beli').style.display = 'none'; }
 
+/* --- POPUP GAMBAR SENDIRI (Klik -> Link Roblox) --- */
+function openGambarPromo() { document.getElementById('modal-gambar-promo').style.display = 'flex'; }
+function closeGambarPromo() { document.getElementById('modal-gambar-promo').style.display = 'none'; }
+
 window.onclick = function (event) {
     const mc = document.getElementById('modal-cara-beli');
     const mq = document.getElementById('modal-qris');
     const mk = document.getElementById('modal-keranjang');
     const mr = document.getElementById('modal-riwayat');
+    const mg = document.getElementById('modal-gambar-promo');
 
     if (event.target == mc) mc.style.display = "none";
     if (event.target == mq) mq.style.display = "none";
     if (event.target == mk) mk.style.display = "none";
     if (event.target == mr) mr.style.display = "none";
+    if (event.target == mg) mg.style.display = "none";
 };
