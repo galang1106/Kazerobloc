@@ -3,15 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KazeRoblox - Top Up Robux</title>
+    <title>KazeRoblox Topup - Top Up Robux</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Tambahan CSS khusus untuk mode Gift */
-        .badge.purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #d8b4fe; }
-        .icon-purple { color: #9333ea; font-size: 1.5rem; }
-        #warning-gift { border-left: 4px solid #9333ea; background: rgba(147, 51, 234, 0.1); }
-    </style>
 </head>
 <body>
 
@@ -20,7 +14,7 @@
             <div class="back-btn"><i class="fas fa-arrow-left"></i></div>
             <div class="header-title">
                 <img src="assets/logo.png" alt="Logo KazeRoblox" class="header-logo">
-                <h1>KazeRoblox</h1>
+                <h1>KazeRoblox Topup</h1>
             </div>
             <div class="header-actions">
                 <div class="action-btn" onclick="openRiwayat()" title="Riwayat Pembelian">
@@ -53,45 +47,32 @@
             <section class="section">
                 <h2 class="section-title">Jenis Diinginkan</h2>
                 <div class="type-tabs">
-                    <div class="tab active" id="tab-pending" onclick="setMode('pending')">
-                        <span class="badge red">Sedang Flashsale!</span>
-                        <div class="tab-content">
-                            <div>
-                                <h3>Robux 5-7 Hari</h3>
-                                <p>Paling Hemat & Terlaris!</p>
-                            </div>
-                            <i class="fas fa-clock icon-green"></i>
-                        </div>
-                    </div>
-                    <div class="tab" id="tab-instant" onclick="setMode('instant')">
+                    <div class="tab active" id="tab-gift" onclick="setMode('gift')">
                         <span class="badge blue">Garansi 100% Aman</span>
                         <div class="tab-content">
                             <div>
-                                <h3>Langsung Masuk</h3>
-                                <p>Syarat: Join Grup 14 Hari</p>
+                                <h3>Via Gift</h3>
+                                <p>Syarat: Bukan Akun Kids Select</p>
                             </div>
-                            <i class="fas fa-bolt icon-blue"></i>
+                            <i class="fas fa-gift icon-blue"></i>
                         </div>
                     </div>
-                    <!-- Tambahan Tab Via Gift -->
-                    <div class="tab" id="tab-gift" onclick="setMode('gift')">
-                        <span class="badge purple">Max 5000 Robux</span>
+                    <div class="tab" id="tab-instant" onclick="setMode('instant')">
+                        <span class="badge red">Tercepat</span>
                         <div class="tab-content">
                             <div>
-                                <h3>Via Gift</h3>
-                                <p>Rp 140 / 1 Robux</p>
+                                <h3>Instant</h3>
+                                <p>Syarat: Join Grup 14 Hari</p>
                             </div>
-                            <i class="fas fa-gift icon-purple"></i>
+                            <i class="fas fa-bolt icon-green"></i>
                         </div>
                     </div>
                 </div>
-                
-                <div id="warning-instant" class="warning-box" style="display: none;">
-                    ⚠️ <b>Perhatian:</b> Untuk layanan Langsung Masuk, akun Roblox kamu WAJIB sudah bergabung di komunitas Laxerouse minimal 14 hari.
+                <div id="warning-gift" class="warning-box">
+                    ⚠️ <b>Perhatian:</b> Untuk layanan Via Gift, akun Roblox kamu TIDAK BOLEH menggunakan mode Kids Select. Pastikan akun dalam mode Roblox biasa (bukan Kids Mode).
                 </div>
-                <!-- Tambahan Info Warning Via Gift -->
-                <div id="warning-gift" class="warning-box" style="display: none;">
-                    🎁 <b>Info Via Gift:</b> Harga adalah <b>Rp 140 per 1 Robux</b>. Batas maksimal pembelian untuk metode ini adalah <b>5000 Robux</b>.
+                <div id="warning-instant" class="warning-box" style="display: none;">
+                    ⚠️ <b>Perhatian:</b> Untuk layanan Instant, akun Roblox kamu WAJIB sudah bergabung di komunitas Laxerouse minimal 14 hari.
                 </div>
             </section>
 
@@ -109,8 +90,7 @@
                 <h2 class="section-title">Jumlah Robux</h2>
                 <div class="custom-input-box">
                     <div class="input-row">
-                        <!-- Tambahkan limit max di input untuk UX tambahan -->
-                        <input type="number" id="custom-robux" placeholder="Masukkan Jumlah" oninput="calculateCustomPrice()" min="1">
+                        <input type="number" id="custom-robux" placeholder="Masukkan Jumlah" oninput="calculateCustomPrice()">
                         <span>Rbx</span>
                     </div>
                     <div class="price-row">
@@ -156,7 +136,7 @@
                 <h2>🌱 Cara Beli Robux</h2>
                 <ol>
                     <li>Masukkan <b>Username Roblox</b> kamu dengan benar di kolom yang disediakan.</li>
-                    <li>Pilih tipe Robux (<b>5-7 Hari</b>, <b>Langsung Masuk</b>, atau <b>Via Gift</b>).</li>
+                    <li>Pilih tipe Robux (<b>Instant</b> atau <b>Via Gift</b>).</li>
                     <li>Ketik jumlah Robux atau pilih langsung dari kotak pilihan di bawahnya.</li>
                     <li>Klik tombol <i class="fas fa-cart-plus"></i> untuk menampung di keranjang atau klik <b>Beli Langsung</b>.</li>
                     <li>Scan QRIS, upload bukti transfer sah, lalu tekan konfirmasi untuk mengirim data ke Admin!</li>
@@ -190,6 +170,15 @@
                 </div>
                 <div id="riwayat-items-list" class="modal-body-scrollable">
                     </div>
+            </div>
+        </div>
+
+        <div id="modal-gambar-promo" class="modal">
+            <div class="popup-gambar-wrapper">
+                <span class="popup-gambar-close" onclick="closeGambarPromo()">&times;</span>
+                <a href="https://www.roblox.com/share/g/758074897" target="_blank" rel="noopener" class="promo-popup-link">
+                    <img src="assets/gambar-sendiri.png" alt="Gambar Promo" onerror="this.src='https://placehold.co/400x400/4CAF50/ffffff?text=Klik+Gambar+Ini'">
+                </a>
             </div>
         </div>
 
