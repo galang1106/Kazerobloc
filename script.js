@@ -6,7 +6,7 @@ const RATES = {
 
 const MIN_ROBUX = 100; // Batas Minimal Top Up
 
-let currentMode = 'gift';
+let currentMode = 'instant';
 let selectedRobux = 0;
 let currentPrice = 0;
 
